@@ -1,0 +1,501 @@
+[
+  {
+    "id": "TC001",
+    "title": "Successful login with valid credentials",
+    "description": "Verify that a user can log in successfully with valid email and password and receives a valid JWT token.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid email and password"
+      },
+      {
+        "type": "action",
+        "description": "Click the login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that login is successful and a JWT token is returned"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Login fails with invalid credentials",
+    "description": "Verify that login attempt with invalid credentials is rejected with an appropriate error message and no token is issued.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid email or password"
+      },
+      {
+        "type": "action",
+        "description": "Click the login button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that login fails with an error message and no JWT token is returned"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Role-based access control enforcement for Growth user",
+    "description": "Verify that Growth users have access only to permitted actions such as creating tickets, reopening, closing, and viewing own tickets, and are blocked from unauthorized operations.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to create a new ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Ticket creation is successful"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to reopen an existing processed ticket created by self"
+      },
+      {
+        "type": "assertion",
+        "description": "Reopen ticket action succeeds"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to add resolution or assign tickets"
+      },
+      {
+        "type": "assertion",
+        "description": "Access denied with appropriate error message"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Role-based access control enforcement for Ops user",
+    "description": "Verify that Ops users can view all tickets, add resolutions, assign tickets, and update priority, and cannot create or close tickets.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Ops user"
+      },
+      {
+        "type": "action",
+        "description": "View list of all tickets"
+      },
+      {
+        "type": "assertion",
+        "description": "All tickets are visible regardless of creator"
+      },
+      {
+        "type": "action",
+        "description": "Add resolution remarks to an open ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Ticket status changes to 'processed' and user assigned successfully"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to create a new ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Access denied with appropriate error"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to close a ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Access denied with appropriate error"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Ticket creation with valid mandatory fields by Growth user",
+    "description": "Verify that a Growth user can create a ticket providing all required fields and the ticket number is generated in format GROW-YYYYMMDD-NNNN with status 'open'.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to new ticket creation page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in brand name, description, issue type, and priority"
+      },
+      {
+        "type": "action",
+        "description": "Submit the ticket form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket is created with status 'open' and ticket_number matches 'GROW-YYYYMMDD-NNNN' format"
+      },
+      {
+        "type": "assertion",
+        "description": "Activity timeline entry is created for ticket creation"
+      },
+      {
+        "type": "assertion",
+        "description": "User is redirected to ticket detail page"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Ticket creation rejects invalid or missing fields",
+    "description": "Verify that ticket creation form enforces input validation and prevents submission with missing or invalid brand name, description, issue type, or priority.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to new ticket creation page"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit form with missing brand name"
+      },
+      {
+        "type": "assertion",
+        "description": "Form validation error shown for brand name"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit form with invalid issue type not in allowed set"
+      },
+      {
+        "type": "assertion",
+        "description": "Form validation error shown for issue type"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit form with invalid priority"
+      },
+      {
+        "type": "assertion",
+        "description": "Form validation error shown for priority"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Ticket status lifecycle transitions",
+    "description": "Verify correct status transitions: open → processed (after Ops resolution) → resolved (after Growth acceptance) or re-opened (after Growth reopens).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new ticket as Growth user (status should be 'open')"
+      },
+      {
+        "type": "action",
+        "description": "Log in as Ops user and submit resolution for the open ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Ticket status updates to 'processed' and Ops user assigned"
+      },
+      {
+        "type": "action",
+        "description": "Log in as Growth user and accept and close the processed ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Ticket status updates to 'resolved' and resolution timestamp recorded"
+      },
+      {
+        "type": "action",
+        "description": "Reopen the resolved ticket (simulate reopen workflow to test reopening)"
+      },
+      {
+        "type": "assertion",
+        "description": "Ticket status changes to 're-opened' and activity logged"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Ticket list search and filtering with pagination",
+    "description": "Verify users can search tickets by ticket number, status, priority, brand name, creator, assignee, and date range, simultaneously applying multiple filters and pagination works correctly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as any user"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to ticket list page"
+      },
+      {
+        "type": "action",
+        "description": "Apply search keyword in full-text search field"
+      },
+      {
+        "type": "action",
+        "description": "Select multiple filters: status 'open', priority 'urgent', brand name filter, creator and assignee filters"
+      },
+      {
+        "type": "action",
+        "description": "Set a date range filter"
+      },
+      {
+        "type": "assertion",
+        "description": "Ticket list updates showing tickets meeting all filter criteria"
+      },
+      {
+        "type": "action",
+        "description": "Navigate through pagination controls"
+      },
+      {
+        "type": "assertion",
+        "description": "Correct tickets are listed per page and sorting by priority then date is maintained"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Activity timeline accuracy and completeness",
+    "description": "Verify the ticket activity timeline accurately logs and displays all actions (creation, status changes, comments, resolution, reopening) with correct actor details and timestamps in chronological order.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a new escalation ticket"
+      },
+      {
+        "type": "action",
+        "description": "Perform ticket resolving as Ops user"
+      },
+      {
+        "type": "action",
+        "description": "Reopen the ticket as Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Close the ticket as Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Load the ticket detail page and activity timeline"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all actions are logged with correct actor, action type, comments, and timestamps in chronological order"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Form inline validation and error messaging",
+    "description": "Verify that all UI forms enforce inline validation on input fields, prevent submission of invalid data, and display appropriate success or error messages.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the ticket creation form"
+      },
+      {
+        "type": "action",
+        "description": "Leave required fields empty and attempt to submit"
+      },
+      {
+        "type": "assertion",
+        "description": "Validation messages appear inline for each missing required field"
+      },
+      {
+        "type": "action",
+        "description": "Fill invalid data in fields (e.g. overly long description, invalid priority)"
+      },
+      {
+        "type": "assertion",
+        "description": "Field-specific error messages displayed preventing submission"
+      },
+      {
+        "type": "action",
+        "description": "Correct errors and submit form"
+      },
+      {
+        "type": "assertion",
+        "description": "Form submission succeeds and shows confirmation or redirects accordingly"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "UI responsiveness and accessibility on different device sizes",
+    "description": "Verify that the UI renders and functions correctly on desktop, tablet, and mobile devices including responsive layout, accessible navigation, and visible status/priority indicators.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Access the portal on desktop screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify layout is optimized for desktop; navigation is visible; forms and tables align correctly"
+      },
+      {
+        "type": "action",
+        "description": "Resize browser or emulate tablet screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "UI adjusts properly, navigation collapses or rearranges as designed; all elements remain accessible"
+      },
+      {
+        "type": "action",
+        "description": "Emulate mobile screen size"
+      },
+      {
+        "type": "assertion",
+        "description": "Layout is vertically stacked and readable; filtering and forms remain usable; status and priority indicators are clear"
+      },
+      {
+        "type": "action",
+        "description": "Validate accessibility using screen readers and keyboard navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "All interactive elements are reachable via keyboard and labeled appropriately"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Security: Input validation and prevention of SQL injection and XSS",
+    "description": "Verify backend rejects malicious inputs preventing SQL injection and XSS attacks by using parameterized queries and proper input validation.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit ticket creation or update requests containing SQL injection payloads such as \"'; DROP TABLE users;--\" in text fields"
+      },
+      {
+        "type": "assertion",
+        "description": "Backend rejects input with validation error and no database compromise occurs"
+      },
+      {
+        "type": "action",
+        "description": "Submit ticket comments or descriptions containing XSS script tags"
+      },
+      {
+        "type": "assertion",
+        "description": "Scripts are sanitized or rejected, and no script execution occurs on UI"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Security: JWT token expiration and invalid token rejection",
+    "description": "Verify that expired or tampered JWT tokens are rejected by the backend API and user is prompted to re-authenticate.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in and obtain a valid JWT token"
+      },
+      {
+        "type": "action",
+        "description": "Manipulate token expiry time to past or alter token payload"
+      },
+      {
+        "type": "action",
+        "description": "Call any authenticated API endpoint with expired or invalid token"
+      },
+      {
+        "type": "assertion",
+        "description": "Backend returns unauthorized error and frontend forces login"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Rate limiting enforcement to prevent brute force attacks",
+    "description": "Verify that the API enforces rate limiting on login and other critical endpoints to prevent brute force attacks and excessive requests.",
+    "category": "security",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send multiple rapid login attempts with invalid credentials exceeding rate limit threshold"
+      },
+      {
+        "type": "assertion",
+        "description": "Further requests are blocked with rate limit error message"
+      },
+      {
+        "type": "action",
+        "description": "Send multiple requests to the ticket creation endpoint quickly to test rate limiting"
+      },
+      {
+        "type": "assertion",
+        "description": "Rate limiting is enforced and requests beyond threshold are blocked"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "UI error messaging and loading states",
+    "description": "Verify that UI shows appropriate loading spinners during async operations and displays user-friendly error messages on failures (e.g., network errors, server errors).",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to tickets list and simulate slow network"
+      },
+      {
+        "type": "assertion",
+        "description": "Loading spinner or skeleton displays while data is being fetched"
+      },
+      {
+        "type": "action",
+        "description": "Simulate API error when submitting ticket creation form"
+      },
+      {
+        "type": "assertion",
+        "description": "User sees a clear error message explaining failure"
+      }
+    ]
+  }
+]

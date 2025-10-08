@@ -1,0 +1,42 @@
+# Escalation Portal - Cursor AI Rules
+
+## Project Overview
+A secure Growth ↔ Ops escalation/ticketing portal with PostgreSQL, Express API, and React frontend.
+
+## Database Conventions
+- Use snake_case for column names
+- Always use transactions for status changes
+- Every status change must create a ticket_activity entry
+- Use prepared statements (parameterized queries) to prevent SQL injection
+- Foreign keys: always use uuid type with REFERENCES
+
+## Code Style
+- TypeScript strict mode enabled
+- Use async/await, not callbacks
+- Handle errors with try-catch and proper error responses
+- All endpoints must validate inputs
+- Use middleware for auth checks
+
+## Security Rules
+- Never expose user passwords or tokens in responses
+- Always sanitize user input before storage
+- Use RBAC: growth, ops, admin roles only
+- File uploads: validate type and size server-side
+- Attachments: use signed URLs only
+
+## Ticket Lifecycle Rules
+1. Created → open (by Growth)
+2. open → processed (by Ops with resolution)
+3. processed → resolved (by Growth acceptance) OR re-opened (by Growth with reason)
+4. Never skip status validation
+
+## API Conventions
+- RESTful endpoints under /api/
+- Auth required on all endpoints except /api/auth/*
+- Return 401 for unauthorized, 403 for forbidden, 404 for not found
+- Use proper HTTP methods: POST for create, GET for read, PATCH for update
+
+## Testing
+- Write unit tests for all business logic
+- Test RBAC enforcement
+- Test status transition validation

@@ -1,0 +1,217 @@
+{
+  "project_name": "Escalation Portal",
+  "project_type": "full-stack web application",
+  "tech_stack": {
+    "frontend": {
+      "framework": "React 18",
+      "language": "TypeScript",
+      "build_tool": "Vite",
+      "ui_framework": "Tailwind CSS",
+      "state_management": ["Zustand", "TanStack Query"],
+      "routing": "React Router v6",
+      "http_client": "Axios",
+      "icons": "Lucide React",
+      "form_handling": "React Hook Form"
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "Express",
+      "language": "TypeScript",
+      "database": "PostgreSQL",
+      "authentication": "JWT with bcrypt",
+      "validation": "Zod",
+      "logging": "Winston",
+      "security": ["Helmet", "CORS", "express-rate-limit"]
+    },
+    "database": {
+      "type": "PostgreSQL 15+",
+      "features": ["UUID primary keys", "Full-text search (tsvector)", "JSONB support", "Triggers and functions"]
+    }
+  },
+  "features": {
+    "authentication": {
+      "description": "JWT-based authentication with role-based access control",
+      "endpoints": ["/api/auth/login", "/api/auth/register", "/api/users/me"],
+      "roles": ["growth", "ops", "admin"],
+      "pages": ["LoginPage"]
+    },
+    "dashboard": {
+      "description": "Overview dashboard with ticket statistics and recent tickets",
+      "features": ["Stats cards (open, processed, reopened)", "Recent tickets list", "Quick navigation"],
+      "pages": ["DashboardPage"],
+      "role_access": ["growth", "ops", "admin"]
+    },
+    "ticket_management": {
+      "description": "Complete ticket lifecycle management",
+      "features": [
+        "Create tickets with priority and issue type",
+        "List tickets with search and filters",
+        "View ticket details and activity timeline",
+        "Add resolutions (Ops)",
+        "Reopen tickets (Growth)",
+        "Close/accept tickets (Growth)",
+        "Unique ticket numbering (GROW-YYYYMMDD-NNNN)"
+      ],
+      "endpoints": [
+        "POST /api/tickets",
+        "GET /api/tickets",
+        "GET /api/tickets/:ticket_number",
+        "PATCH /api/tickets/:ticket_number",
+        "POST /api/tickets/:ticket_number/resolve",
+        "POST /api/tickets/:ticket_number/reopen",
+        "POST /api/tickets/:ticket_number/close",
+        "GET /api/tickets/:ticket_number/activities"
+      ],
+      "pages": ["TicketsListPage", "CreateTicketPage", "TicketDetailPage"],
+      "ticket_statuses": ["open", "processed", "resolved", "re-opened", "closed"],
+      "priorities": ["urgent", "high", "medium", "low"],
+      "issue_types": [
+        "product_not_as_listed",
+        "giant_discrepancy_brandless_inverterless",
+        "physical_vs_scale_mismatch",
+        "other"
+      ]
+    },
+    "search_and_filtering": {
+      "description": "Advanced search and filtering capabilities",
+      "features": [
+        "Full-text search across ticket content",
+        "Filter by status, priority, brand name",
+        "Filter by creator or assignee",
+        "Date range filtering",
+        "Pagination support"
+      ]
+    },
+    "audit_trail": {
+      "description": "Complete activity logging for all ticket actions",
+      "features": [
+        "Activity timeline on ticket detail",
+        "Track all status changes",
+        "Record actor and timestamp",
+        "Store additional payload data (JSONB)"
+      ]
+    },
+    "role_based_access": {
+      "description": "Granular permissions based on user role",
+      "permissions": {
+        "growth": ["create_ticket", "view_own_tickets", "reopen_ticket", "close_ticket"],
+        "ops": ["view_all_tickets", "add_resolution", "assign_tickets", "update_priority"],
+        "admin": ["all_permissions"]
+      }
+    }
+  },
+  "database_schema": {
+    "tables": [
+      {
+        "name": "users",
+        "description": "User accounts with authentication",
+        "key_columns": ["id", "email", "name", "role", "password_hash"]
+      },
+      {
+        "name": "tickets",
+        "description": "Main ticket data with lifecycle tracking",
+        "key_columns": ["id", "ticket_number", "created_by", "brand_name", "description", "issue_type", "expected_output", "priority", "status", "current_assignee", "resolution_remarks", "reopen_reason"]
+      },
+      {
+        "name": "ticket_activities",
+        "description": "Audit trail of all ticket actions",
+        "key_columns": ["id", "ticket_id", "actor_id", "action", "comment", "payload"]
+      },
+      {
+        "name": "attachments",
+        "description": "File attachment metadata",
+        "key_columns": ["id", "ticket_id", "filename", "url", "uploaded_by"]
+      }
+    ]
+  },
+  "api_endpoints": {
+    "authentication": [
+      {"method": "POST", "path": "/api/auth/login", "description": "User login with email/password"},
+      {"method": "POST", "path": "/api/auth/register", "description": "Register new user"},
+      {"method": "GET", "path": "/api/users/me", "description": "Get current authenticated user"}
+    ],
+    "tickets": [
+      {"method": "POST", "path": "/api/tickets", "description": "Create new ticket (Growth only)"},
+      {"method": "GET", "path": "/api/tickets", "description": "List tickets with filters"},
+      {"method": "GET", "path": "/api/tickets/:ticket_number", "description": "Get ticket details"},
+      {"method": "PATCH", "path": "/api/tickets/:ticket_number", "description": "Update ticket"},
+      {"method": "POST", "path": "/api/tickets/:ticket_number/resolve", "description": "Add resolution (Ops only)"},
+      {"method": "POST", "path": "/api/tickets/:ticket_number/reopen", "description": "Reopen ticket (Growth only)"},
+      {"method": "POST", "path": "/api/tickets/:ticket_number/close", "description": "Close ticket (Growth only)"},
+      {"method": "GET", "path": "/api/tickets/:ticket_number/activities", "description": "Get activity timeline"}
+    ]
+  },
+  "security_features": [
+    "JWT token authentication",
+    "bcrypt password hashing",
+    "Role-based access control (RBAC)",
+    "Input validation with Zod schemas",
+    "SQL injection prevention (parameterized queries)",
+    "XSS protection",
+    "Rate limiting",
+    "CORS configuration",
+    "Security headers (Helmet.js)"
+  ],
+  "key_workflows": [
+    {
+      "name": "ticket_creation_workflow",
+      "description": "Growth user creates a new escalation ticket",
+      "steps": [
+        "Growth navigates to /tickets/new",
+        "Fills in brand name, description, issue type, priority",
+        "Submits form",
+        "System generates unique ticket number",
+        "Ticket created with status 'open'",
+        "Activity logged",
+        "Redirects to ticket detail page"
+      ]
+    },
+    {
+      "name": "ticket_resolution_workflow",
+      "description": "Ops adds resolution to an open ticket",
+      "steps": [
+        "Ops views ticket detail",
+        "Enters resolution remarks and RCA",
+        "Submits resolution",
+        "Ticket status changes to 'processed'",
+        "Ops user assigned to ticket",
+        "Activity logged",
+        "Notification sent to Growth user (future)"
+      ]
+    },
+    {
+      "name": "ticket_reopen_workflow",
+      "description": "Growth reopens a processed ticket",
+      "steps": [
+        "Growth reviews processed ticket",
+        "Enters reopen reason",
+        "Submits reopen request",
+        "Ticket status changes to 're-opened'",
+        "Activity logged",
+        "Ticket returns to Ops queue"
+      ]
+    },
+    {
+      "name": "ticket_closure_workflow",
+      "description": "Growth accepts resolution and closes ticket",
+      "steps": [
+        "Growth reviews processed ticket",
+        "Clicks 'Accept & Close'",
+        "Ticket status changes to 'resolved'",
+        "Resolution timestamp recorded",
+        "Activity logged"
+      ]
+    }
+  ],
+  "test_coverage_areas": [
+    "Authentication flow (login, token validation)",
+    "Role-based access control enforcement",
+    "Ticket creation with all required fields",
+    "Ticket status transitions (open → processed → resolved/re-opened)",
+    "Search and filtering functionality",
+    "Activity timeline accuracy",
+    "Form validation",
+    "Error handling and user feedback",
+    "Responsive UI on different screen sizes"
+  ]
+}
