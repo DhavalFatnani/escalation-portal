@@ -8,6 +8,7 @@ import TicketsListPage from './pages/TicketsListPage';
 import TicketDetailPage from './pages/TicketDetailPage';
 import CreateTicketPage from './pages/CreateTicketPage';
 import UsersManagementPage from './pages/UsersManagementPage';
+import SystemSettingsPage from './pages/SystemSettingsPage';
 import Layout from './components/Layout';
 
 function App() {
@@ -38,10 +39,12 @@ function App() {
             <Route element={<Layout />}>
               <Route path="/" element={user?.role === 'admin' ? <AdminDashboard /> : <DashboardPage />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<UsersManagementPage />} />
+              <Route path="/admin/settings" element={<SystemSettingsPage />} />
+              <Route path="/users" element={<UsersManagementPage />} />
               <Route path="/tickets" element={<TicketsListPage />} />
               <Route path="/tickets/new" element={<CreateTicketPage />} />
               <Route path="/tickets/:ticketNumber" element={<TicketDetailPage />} />
-              <Route path="/users" element={<UsersManagementPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           )

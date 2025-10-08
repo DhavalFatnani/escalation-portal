@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { CreateTicketDTO, IssueType, TicketPriority } from '../types';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Check, Sparkles, FileText, AlertTriangle } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 
 export default function CreateTicketPage() {
@@ -60,8 +60,8 @@ export default function CreateTicketPage() {
       finalData.issue_type = customIssueType.trim() as IssueType;
     }
     
-    // If expected output is "Other:" and custom value is provided
-    if (selectedExpectedOutput === 'Other:' && customExpectedOutput.trim()) {
+    // If expected output is "Other" and custom value is provided
+    if (selectedExpectedOutput === 'Other' && customExpectedOutput.trim()) {
       finalData.expected_output = customExpectedOutput.trim();
     } else if (selectedExpectedOutput) {
       finalData.expected_output = selectedExpectedOutput;
@@ -87,30 +87,50 @@ export default function CreateTicketPage() {
 
   const priorities: TicketPriority[] = ['urgent', 'high', 'medium', 'low'];
 
+  const getPriorityStyle = (priority: TicketPriority) => {
+    switch (priority) {
+      case 'urgent': return 'from-red-500 to-pink-500';
+      case 'high': return 'from-orange-500 to-red-500';
+      case 'medium': return 'from-yellow-500 to-orange-500';
+      case 'low': return 'from-green-500 to-emerald-500';
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-6xl mx-auto animate-fade-in">
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center text-gray-600 hover:text-gray-900 mb-6 font-medium transition-colors group"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" />
+        <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
         Back
       </button>
 
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Ticket</h1>
+      <div className="card-modern shadow-xl-colored">
+        {/* Header */}
+        <div className="border-b border-gray-200 pb-6 mb-8">
+          <div className="flex items-center mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mr-4">
+              <FileText className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900">Create New Ticket</h1>
+              <p className="text-gray-600 mt-1">Submit an escalation request to the Ops team</p>
+            </div>
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start">
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start animate-slide-in-right">
             <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
-            <span className="text-sm text-red-700">{error}</span>
+            <span className="text-sm text-red-700 font-medium">{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Brand Name */}
-          <div>
-            <label htmlFor="brand_name" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="group">
+            <label htmlFor="brand_name" className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
               Brand Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -119,14 +139,14 @@ export default function CreateTicketPage() {
               value={formData.brand_name}
               onChange={(e) => setFormData({ ...formData, brand_name: e.target.value })}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter brand name"
+              className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
+              placeholder="Enter the brand name"
             />
           </div>
 
           {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="group">
+            <label htmlFor="description" className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
               Description
             </label>
             <textarea
@@ -134,14 +154,14 @@ export default function CreateTicketPage() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={5}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all resize-none"
               placeholder="Describe the issue in detail..."
             />
           </div>
 
           {/* Issue Type */}
-          <div>
-            <label htmlFor="issue_type" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="group">
+            <label htmlFor="issue_type" className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
               Issue Type
             </label>
             <select
@@ -151,10 +171,10 @@ export default function CreateTicketPage() {
                 const value = e.target.value as IssueType || undefined;
                 setFormData({ ...formData, issue_type: value });
                 if (value !== 'other') {
-                  setCustomIssueType(''); // Clear custom input if not "Other"
+                  setCustomIssueType('');
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
             >
               <option value="">Select issue type</option>
               {issueTypes.map((type) => (
@@ -164,15 +184,14 @@ export default function CreateTicketPage() {
               ))}
             </select>
             
-            {/* Custom Issue Type Input (shown when "Other" is selected) */}
             {formData.issue_type === 'other' && (
-              <div className="mt-3 animate-fade-in">
+              <div className="mt-3 animate-slide-in-right">
                 <input
                   type="text"
                   value={customIssueType}
                   onChange={(e) => setCustomIssueType(e.target.value)}
                   placeholder="Please specify the issue type..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-blue-50"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-indigo-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium text-gray-900 placeholder-gray-500"
                   required
                 />
               </div>
@@ -180,8 +199,8 @@ export default function CreateTicketPage() {
           </div>
 
           {/* Expected Output */}
-          <div>
-            <label htmlFor="expected_output" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="group">
+            <label htmlFor="expected_output" className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
               Expected Output
             </label>
             <select
@@ -190,12 +209,12 @@ export default function CreateTicketPage() {
               onChange={(e) => {
                 const value = e.target.value;
                 setSelectedExpectedOutput(value);
-                if (value !== 'Other:') {
-                  setCustomExpectedOutput(''); // Clear custom input if not "Other"
+                if (value !== 'Other') {
+                  setCustomExpectedOutput('');
                   setFormData({ ...formData, expected_output: value });
                 }
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
             >
               <option value="">Select expected output</option>
               {expectedOutputOptions.map((option) => (
@@ -205,15 +224,14 @@ export default function CreateTicketPage() {
               ))}
             </select>
             
-            {/* Custom Expected Output Input (shown when "Other:" is selected) */}
-            {selectedExpectedOutput === 'Other:' && (
-              <div className="mt-3 animate-fade-in">
+            {selectedExpectedOutput === 'Other' && (
+              <div className="mt-3 animate-slide-in-right">
                 <input
                   type="text"
                   value={customExpectedOutput}
                   onChange={(e) => setCustomExpectedOutput(e.target.value)}
                   placeholder="Please specify the expected output..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-blue-50"
+                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-indigo-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium text-gray-900 placeholder-gray-500"
                   required
                 />
               </div>
@@ -222,28 +240,35 @@ export default function CreateTicketPage() {
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">
               Priority <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {priorities.map((priority) => (
                 <button
                   key={priority}
                   type="button"
                   onClick={() => setFormData({ ...formData, priority })}
-                  className={`px-4 py-3 rounded-md text-sm font-medium capitalize transition-colors ${
+                  className={`relative px-6 py-4 rounded-xl text-sm font-bold capitalize transition-all duration-300 transform hover:scale-105 ${
                     formData.priority === priority
-                      ? priority === 'urgent'
-                        ? 'bg-red-600 text-white'
-                        : priority === 'high'
-                        ? 'bg-orange-600 text-white'
-                        : priority === 'medium'
-                        ? 'bg-yellow-600 text-white'
-                        : 'bg-green-600 text-white'
+                      ? `bg-gradient-to-r ${getPriorityStyle(priority)} text-white shadow-lg ring-4 ring-offset-2 ${
+                          priority === 'urgent' ? 'ring-red-200' :
+                          priority === 'high' ? 'ring-orange-200' :
+                          priority === 'medium' ? 'ring-yellow-200' :
+                          'ring-green-200'
+                        }`
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
+                  {formData.priority === priority && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                      <Check className="w-4 h-4 text-indigo-600" />
+                    </div>
+                  )}
                   {priority}
+                  {priority === 'urgent' && (
+                    <AlertTriangle className="w-4 h-4 inline-block ml-1" />
+                  )}
                 </button>
               ))}
             </div>
@@ -251,8 +276,8 @@ export default function CreateTicketPage() {
 
           {/* File Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Reference Files (Optional)
+            <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
+              Attachments (Optional)
             </label>
             <FileUpload 
               onFilesChange={setFiles}
@@ -262,18 +287,29 @@ export default function CreateTicketPage() {
           </div>
 
           {/* Submit Buttons */}
-          <div className="flex gap-3 pt-6 border-t">
+          <div className="flex gap-4 pt-6 border-t border-gray-200">
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="flex-1 bg-primary-600 text-white py-3 px-4 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 disabled:opacity-60 disabled:cursor-not-allowed font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center"
             >
-              {createMutation.isPending ? 'Creating...' : 'Create Ticket'}
+              {createMutation.isPending ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                  Creating Ticket...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  Create Ticket
+                </>
+              )}
             </button>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 font-medium"
+              disabled={createMutation.isPending}
+              className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-bold text-lg transition-all duration-300 disabled:opacity-50"
             >
               Cancel
             </button>

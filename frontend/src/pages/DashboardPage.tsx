@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { Link } from 'react-router-dom';
-import { Ticket, AlertCircle, Clock, CheckCircle, Plus } from 'lucide-react';
+import { Ticket, AlertCircle, Clock, CheckCircle, Plus, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
 import { TicketStatus } from '../types';
 import { useAuthStore } from '../stores/authStore';
 
@@ -25,7 +25,7 @@ export default function DashboardPage() {
 
   const { data: recentTickets } = useQuery({
     queryKey: ['tickets', 'recent'],
-    queryFn: () => ticketService.getTickets({ }),
+    queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'] }),
   });
 
   const stats = [
@@ -33,145 +33,171 @@ export default function DashboardPage() {
       name: 'Open Tickets',
       value: openTickets?.total || 0,
       icon: Ticket,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      gradient: 'from-blue-500 to-cyan-500',
       link: '/tickets?status=open',
+      description: 'Needs attention',
     },
     {
       name: 'Awaiting Review',
       value: processedTickets?.total || 0,
       icon: Clock,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100',
+      gradient: 'from-yellow-500 to-orange-500',
       link: '/tickets?status=processed',
+      description: 'In progress',
     },
     {
       name: 'Re-opened',
       value: reopenedTickets?.total || 0,
       icon: AlertCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100',
+      gradient: 'from-red-500 to-pink-500',
       link: '/tickets?status=re-opened',
+      description: 'Requires action',
     },
   ];
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-700 bg-red-100';
-      case 'high': return 'text-orange-700 bg-orange-100';
-      case 'medium': return 'text-yellow-700 bg-yellow-100';
-      case 'low': return 'text-green-700 bg-green-100';
-      default: return 'text-gray-700 bg-gray-100';
+      case 'urgent': return 'bg-gradient-to-r from-red-500 to-pink-500 text-white';
+      case 'high': return 'bg-gradient-to-r from-orange-500 to-red-500 text-white';
+      case 'medium': return 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white';
+      case 'low': return 'bg-gradient-to-r from-green-500 to-emerald-500 text-white';
+      default: return 'bg-gray-200 text-gray-700';
     }
   };
 
   const getStatusColor = (status: TicketStatus) => {
     switch (status) {
-      case 'open': return 'text-blue-700 bg-blue-100';
-      case 'processed': return 'text-yellow-700 bg-yellow-100';
-      case 'resolved': return 'text-green-700 bg-green-100';
-      case 're-opened': return 'text-red-700 bg-red-100';
-      case 'closed': return 'text-gray-700 bg-gray-100';
-      default: return 'text-gray-700 bg-gray-100';
+      case 'open': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'processed': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'resolved': return 'bg-green-100 text-green-700 border-green-200';
+      case 're-opened': return 'bg-red-100 text-red-700 border-red-200';
+      case 'closed': return 'bg-gray-100 text-gray-700 border-gray-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
   return (
-    <div>
-      <div className="mb-8 flex justify-between items-center">
+    <div className="space-y-8 animate-fade-in">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back, {user?.name || user?.email}</p>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-2 flex items-center">
+            <span className="text-gradient">Dashboard</span>
+            <Sparkles className="w-6 h-6 ml-2 text-indigo-600 animate-pulse" />
+          </h1>
+          <p className="text-base text-gray-600">
+            Welcome back, <span className="font-semibold text-gray-900">{user?.name || user?.email}</span> 👋
+          </p>
         </div>
         
         {user?.role === 'growth' && (
           <Link
             to="/tickets/new"
-            className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 font-medium"
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-5 h-5 mr-2" />
             New Ticket
           </Link>
         )}
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {stats.map((stat) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat, index) => (
           <Link
             key={stat.name}
             to={stat.link}
-            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
+            className="card-modern group hover:-translate-y-2 animate-slide-in-right"
+            style={{ animationDelay: `${index * 100}ms` }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">{stat.name}</p>
-                <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">{stat.name}</p>
+                <p className="text-5xl font-extrabold text-gray-900 mb-2">{stat.value}</p>
+                <p className="text-sm text-gray-500">{stat.description}</p>
               </div>
-              <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+              <div className={`p-4 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                <stat.icon className="w-8 h-8 text-white" />
               </div>
+            </div>
+            
+            {/* Progress Bar */}
+            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className={`h-full bg-gradient-to-r ${stat.gradient} transition-all duration-1000`}
+                style={{ width: `${Math.min((stat.value / 20) * 100, 100)}%` }}
+              ></div>
             </div>
           </Link>
         ))}
       </div>
 
       {/* Recent Tickets */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Tickets</h2>
+      <div className="card-modern animate-slide-in-left">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+              Recent Tickets
+              <TrendingUp className="w-6 h-6 ml-2 text-indigo-600" />
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">Latest updates across all tickets</p>
+          </div>
+          <Link
+            to="/tickets"
+            className="flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors group"
+          >
+            View all
+            <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
         
-        <div className="divide-y divide-gray-200">
-          {recentTickets?.tickets.slice(0, 10).map((ticket) => (
+        <div className="space-y-3">
+          {recentTickets?.tickets.slice(0, 10).map((ticket, index) => (
             <Link
               key={ticket.id}
               to={`/tickets/${ticket.ticket_number}`}
-              className="block px-6 py-4 hover:bg-gray-50 transition-colors"
+              className="block p-5 bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300 border-2 border-transparent hover:border-indigo-200 group"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-3 mb-1">
-                    <p className="text-sm font-medium text-gray-900">
+                  <div className="flex items-center flex-wrap gap-2 mb-2">
+                    <span className="text-sm font-bold text-gray-900 font-mono bg-white px-3 py-1 rounded-lg shadow-sm">
                       {ticket.ticket_number}
-                    </p>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
-                      {ticket.priority}
                     </span>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(ticket.status)}`}>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold ${getPriorityColor(ticket.priority)} shadow-sm`}>
+                      {ticket.priority.toUpperCase()}
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold border ${getStatusColor(ticket.status)}`}>
                       {ticket.status}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-900 font-medium mb-1">
+                  <p className="text-base font-semibold text-gray-900 mb-1 group-hover:text-indigo-700 transition-colors">
                     {ticket.brand_name}
                   </p>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-sm text-gray-600 truncate">
                     {ticket.description || 'No description'}
                   </p>
                 </div>
-                <div className="ml-4 text-right">
-                  <p className="text-xs text-gray-500">
-                    {new Date(ticket.created_at).toLocaleDateString()}
-                  </p>
+                <div className="ml-4 flex flex-col items-end">
+                  <span className="text-xs font-medium text-gray-500 bg-white px-3 py-1 rounded-full">
+                    {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all mt-2" />
                 </div>
               </div>
             </Link>
           ))}
 
           {(!recentTickets?.tickets || recentTickets.tickets.length === 0) && (
-            <div className="px-6 py-8 text-center text-gray-500">
-              No tickets found
+            <div className="py-16 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                <Ticket className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 font-medium">No tickets found</p>
+              <p className="text-sm text-gray-400 mt-1">Create your first ticket to get started</p>
             </div>
           )}
-        </div>
-
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <Link
-            to="/tickets"
-            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-          >
-            View all tickets →
-          </Link>
         </div>
       </div>
     </div>

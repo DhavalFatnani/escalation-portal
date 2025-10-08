@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { userService } from '../services/userService';
-import { Plus, Trash2, AlertCircle, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, AlertCircle, Copy, Check, Users, Shield, Mail, UserCircle, Clock } from 'lucide-react';
 
 export default function UsersManagementPage() {
   const { user } = useAuthStore();
@@ -22,10 +22,10 @@ export default function UsersManagementPage() {
   // Redirect if not admin
   if (user?.role !== 'admin') {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen animate-scale-in">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <AlertCircle className="w-20 h-20 text-red-500 mx-auto mb-4 animate-pulse" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Access Denied</h2>
           <p className="text-gray-600">Only administrators can access user management.</p>
         </div>
       </div>
@@ -90,162 +90,205 @@ export default function UsersManagementPage() {
     setCopied(false);
   };
 
+  const getRoleBadgeStyle = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-gradient-to-r from-purple-500 to-pink-500 text-white';
+      case 'ops': return 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white';
+      case 'growth': return 'bg-gradient-to-r from-green-500 to-emerald-500 text-white';
+      default: return 'bg-gray-200 text-gray-700';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-600">Loading users...</div>
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4 animate-pulse">
+            <Users className="w-8 h-8 text-indigo-600" />
+          </div>
+          <p className="text-gray-600 font-medium">Loading users...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Create and manage user accounts
-          </p>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-2 flex items-center">
+            <Shield className="w-7 h-7 mr-2 text-purple-600" />
+            <span className="text-gradient">User Management</span>
+          </h1>
+          <p className="text-base text-gray-600">Create and manage user accounts</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-5 h-5 mr-2" />
           Create User
         </button>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Last Login
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {usersData?.users.map((u: any) => (
-              <tr key={u.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{u.name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-600">{u.email}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                    u.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                    u.role === 'ops' ? 'bg-blue-100 text-blue-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {u.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {u.id !== user?.id && (
-                    <button
-                      onClick={() => {
-                        if (confirm(`Delete user ${u.name}?`)) {
-                          deleteUserMutation.mutate(u.id);
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Users by Team Sections */}
+      <div className="space-y-8">
+        {/* Admin Team */}
+        {(() => {
+          const adminUsers = usersData?.users.filter((u: any) => u.role === 'admin') || [];
+          return adminUsers.length > 0 && (
+            <div className="animate-slide-in-right">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Shield className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Admin Team</h2>
+                    <p className="text-sm text-gray-600">{adminUsers.length} member{adminUsers.length !== 1 ? 's' : ''}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {adminUsers.map((u: any, index: number) => (
+                  <UserCard key={u.id} user={u} currentUser={user} deleteUser={deleteUserMutation.mutate} getRoleBadgeStyle={getRoleBadgeStyle} index={index} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Growth Team */}
+        {(() => {
+          const growthUsers = usersData?.users.filter((u: any) => u.role === 'growth') || [];
+          return growthUsers.length > 0 && (
+            <div className="animate-slide-in-right" style={{ animationDelay: '100ms' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Growth Team</h2>
+                    <p className="text-sm text-gray-600">{growthUsers.length} member{growthUsers.length !== 1 ? 's' : ''}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {growthUsers.map((u: any, index: number) => (
+                  <UserCard key={u.id} user={u} currentUser={user} deleteUser={deleteUserMutation.mutate} getRoleBadgeStyle={getRoleBadgeStyle} index={index} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Ops Team */}
+        {(() => {
+          const opsUsers = usersData?.users.filter((u: any) => u.role === 'ops') || [];
+          return opsUsers.length > 0 && (
+            <div className="animate-slide-in-right" style={{ animationDelay: '200ms' }}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Operations Team</h2>
+                    <p className="text-sm text-gray-600">{opsUsers.length} member{opsUsers.length !== 1 ? 's' : ''}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {opsUsers.map((u: any, index: number) => (
+                  <UserCard key={u.id} user={u} currentUser={user} deleteUser={deleteUserMutation.mutate} getRoleBadgeStyle={getRoleBadgeStyle} index={index} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Create User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={closeModal} />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                {generatedPassword ? 'User Created Successfully' : 'Create New User'}
-              </h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" 
+            onClick={closeModal} 
+          />
+          <div className="relative glass rounded-3xl shadow-xl-colored max-w-lg w-full p-8 animate-scale-in">
+            {generatedPassword ? (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mb-4">
+                    <Check className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">User Created!</h2>
+                  <p className="text-gray-600">Share these credentials securely with the new user</p>
+                </div>
 
-              {generatedPassword ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-md">
-                    <p className="text-sm text-green-800 mb-3">
-                      Account created! Share these credentials with the user:
-                    </p>
-                    <div className="space-y-2">
+                  <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl">
+                    <div className="space-y-3">
                       <div>
-                        <label className="text-xs font-medium text-gray-700">Email:</label>
-                        <p className="text-sm font-mono bg-white p-2 rounded border">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Email</label>
+                        <p className="mt-1 text-sm font-mono font-semibold text-gray-900 bg-white p-3 rounded-lg border border-gray-200">
                           {createdUserEmail}
                         </p>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-700">Temporary Password:</label>
-                        <div className="flex items-center gap-2">
-                          <p className="flex-1 text-sm font-mono bg-white p-2 rounded border">
+                        <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Temporary Password</label>
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="flex-1 text-sm font-mono font-semibold text-gray-900 bg-white p-3 rounded-lg border border-gray-200">
                             {generatedPassword}
                           </p>
                           <button
                             onClick={copyPassword}
-                            className="p-2 text-primary-600 hover:bg-primary-50 rounded"
+                            className="p-3 bg-white hover:bg-gray-50 text-indigo-600 rounded-lg border-2 border-indigo-200 transition-colors"
                             title="Copy password"
                           >
-                            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            {copied ? <Check className="w-5 h-5 text-green-600" /> : <Copy className="w-5 h-5" />}
                           </button>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <p className="text-xs text-yellow-800">
-                      ⚠️ <strong>Important:</strong> The user will be required to change this password on first login.
-                      Make sure to securely share these credentials.
+                  <div className="p-4 bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl">
+                    <p className="text-sm text-yellow-900 flex items-start">
+                      <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
+                      <span><strong>Important:</strong> The user must change this password on first login.</span>
                     </p>
                   </div>
-
-                  <button
-                    onClick={closeModal}
-                    className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700"
-                  >
-                    Done
-                  </button>
                 </div>
-              ) : (
-                <form onSubmit={handleCreateUser} className="space-y-4">
+
+                <button
+                  onClick={closeModal}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                    <UserCircle className="w-6 h-6 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Create New User</h2>
+                </div>
+
+                <form onSubmit={handleCreateUser} className="space-y-5">
                   {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
-                      <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-sm text-red-700">{error}</span>
+                    <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start animate-slide-in-right">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
+                      <span className="text-sm text-red-700 font-medium">{error}</span>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
                       Full Name *
                     </label>
                     <input
@@ -253,13 +296,13 @@ export default function UsersManagementPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
                       placeholder="John Doe"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
                       Email Address *
                     </label>
                     <input
@@ -267,59 +310,125 @@ export default function UsersManagementPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value.toLowerCase() })}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
                       placeholder="john@company.com"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
                       Role *
                     </label>
                     <select
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
                     >
                       <option value="growth">Growth Team</option>
                       <option value="ops">Operations Team</option>
                       <option value="admin">Administrator</option>
                     </select>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {formData.role === 'growth' && 'Can create and manage their own tickets'}
-                      {formData.role === 'ops' && 'Can view and resolve all tickets'}
-                      {formData.role === 'admin' && 'Full system access including user management'}
+                    <p className="mt-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                      {formData.role === 'growth' && '✓ Can create and manage their own tickets'}
+                      {formData.role === 'ops' && '✓ Can view and resolve all tickets'}
+                      {formData.role === 'admin' && '✓ Full system access including user management'}
                     </p>
                   </div>
 
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-xs text-blue-800">
-                      A temporary password will be automatically generated. The user must change it on first login.
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl">
+                    <p className="text-sm text-blue-900 flex items-start">
+                      <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      A temporary password will be generated automatically.
                     </p>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 pt-4">
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                      className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-semibold transition-all"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={createUserMutation.isPending}
-                      className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl hover:from-purple-700 hover:to-pink-700 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
                     >
                       {createUserMutation.isPending ? 'Creating...' : 'Create User'}
                     </button>
                   </div>
                 </form>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// User Card Component
+interface UserCardProps {
+  user: any;
+  currentUser: any;
+  deleteUser: (id: string) => void;
+  getRoleBadgeStyle: (role: string) => string;
+  index: number;
+}
+
+function UserCard({ user: u, currentUser, deleteUser, getRoleBadgeStyle, index }: UserCardProps) {
+  return (
+    <div 
+      className="card-modern group hover:-translate-y-2 animate-slide-in-right"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-4">
+          <div className={`w-14 h-14 rounded-2xl ${getRoleBadgeStyle(u.role)} flex items-center justify-center font-bold text-2xl shadow-lg`}>
+            {u.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-bold text-gray-900 truncate">{u.name}</h3>
+            <p className="text-sm text-gray-500 truncate flex items-center">
+              <Mail className="w-3 h-3 mr-1" />
+              {u.email}
+            </p>
+          </div>
+        </div>
+        {u.id !== currentUser?.id && (
+          <button
+            onClick={() => {
+              if (confirm(`⚠️ Delete user ${u.name}?\n\nThis action cannot be undone.`)) {
+                deleteUser(u.id);
+              }
+            }}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete user"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+          <span className="text-xs font-semibold text-gray-600 uppercase">Role</span>
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${getRoleBadgeStyle(u.role)} shadow-sm`}>
+            {u.role.toUpperCase()}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+          <span className="text-xs font-semibold text-gray-600 uppercase flex items-center">
+            <Clock className="w-3 h-3 mr-1" />
+            Last Login
+          </span>
+          <span className="text-xs text-gray-700 font-medium">
+            {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : 'Never'}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

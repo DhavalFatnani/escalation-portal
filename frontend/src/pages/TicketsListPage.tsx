@@ -2,20 +2,35 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ticketService } from '../services/ticketService';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, Ticket as TicketIcon, ArrowRight, X, Sparkles } from 'lucide-react';
 import { TicketStatus, TicketPriority } from '../types';
 
 export default function TicketsListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [includeResolved, setIncludeResolved] = useState(searchParams.get('includeResolved') === 'true');
   
   const statusFilter = searchParams.get('status')?.split(',') as TicketStatus[] | undefined;
   const priorityFilter = searchParams.get('priority')?.split(',') as TicketPriority[] | undefined;
 
+  // Build status filter: exclude resolved/closed by default unless includeResolved is true
+  const effectiveStatusFilter = (() => {
+    if (statusFilter && statusFilter.length > 0) {
+      // User has manually selected specific statuses
+      return statusFilter;
+    }
+    if (!includeResolved) {
+      // Default: exclude resolved and closed
+      return ['open', 'processed', 're-opened'] as TicketStatus[];
+    }
+    // Include all statuses
+    return undefined;
+  })();
+
   const { data, isLoading } = useQuery({
-    queryKey: ['tickets', statusFilter, priorityFilter, search],
+    queryKey: ['tickets', effectiveStatusFilter, priorityFilter, search],
     queryFn: () => ticketService.getTickets({
-      status: statusFilter,
+      status: effectiveStatusFilter,
       priority: priorityFilter,
       search,
     }),
@@ -50,61 +65,85 @@ export default function TicketsListPage() {
     setSearchParams(params);
   };
 
+  const clearFilters = () => {
+    setSearchParams(new URLSearchParams());
+    setSearch('');
+    setIncludeResolved(false);
+  };
+
+  const hasFilters = statusFilter || priorityFilter || search;
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'text-red-700 bg-red-100';
-      case 'high': return 'text-orange-700 bg-orange-100';
-      case 'medium': return 'text-yellow-700 bg-yellow-100';
-      case 'low': return 'text-green-700 bg-green-100';
-      default: return 'text-gray-700 bg-gray-100';
+      case 'urgent': return 'bg-gradient-to-r from-red-500 to-pink-500 text-white';
+      case 'high': return 'bg-gradient-to-r from-orange-500 to-red-500 text-white';
+      case 'medium': return 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white';
+      case 'low': return 'bg-gradient-to-r from-green-500 to-emerald-500 text-white';
+      default: return 'bg-gray-200 text-gray-700';
     }
   };
 
   const getStatusColor = (status: TicketStatus) => {
     switch (status) {
-      case 'open': return 'text-blue-700 bg-blue-100';
-      case 'processed': return 'text-yellow-700 bg-yellow-100';
-      case 'resolved': return 'text-green-700 bg-green-100';
-      case 're-opened': return 'text-red-700 bg-red-100';
-      case 'closed': return 'text-gray-700 bg-gray-100';
-      default: return 'text-gray-700 bg-gray-100';
+      case 'open': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'processed': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+      case 'resolved': return 'bg-green-100 text-green-700 border-green-200';
+      case 're-opened': return 'bg-red-100 text-red-700 border-red-200';
+      case 'closed': return 'bg-gray-100 text-gray-700 border-gray-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Tickets</h1>
-        <p className="text-gray-600">View and manage all escalation tickets</p>
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-2 flex items-center">
+            <TicketIcon className="w-7 h-7 mr-2 text-indigo-600" />
+            <span className="text-gradient">All Tickets</span>
+          </h1>
+          <p className="text-base text-gray-600">View and manage escalation tickets</p>
+        </div>
+        {hasFilters && (
+          <button
+            onClick={clearFilters}
+            className="flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Clear Filters
+          </button>
+        )}
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <form onSubmit={handleSearch} className="mb-4">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <div className="card-modern">
+        <form onSubmit={handleSearch} className="mb-6">
+          <div className="flex gap-3">
+            <div className="flex-1 relative group">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-focus-within:text-indigo-600 transition-colors" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by ticket number, brand, or description..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full pl-12 pr-4 py-3 bg-white text-gray-900 placeholder-gray-500 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 font-medium"
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
               Search
             </button>
           </div>
         </form>
 
-        <div className="flex items-start gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Status Filter */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-              <Filter className="w-4 h-4 mr-1" />
+            <p className="text-sm font-bold text-gray-700 mb-3 flex items-center uppercase tracking-wide">
+              <Filter className="w-4 h-4 mr-2 text-indigo-600" />
               Status
             </p>
             <div className="flex flex-wrap gap-2">
@@ -112,9 +151,9 @@ export default function TicketsListPage() {
                 <button
                   key={status}
                   onClick={() => toggleFilter('status', status)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
                     statusFilter?.includes(status)
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -124,9 +163,10 @@ export default function TicketsListPage() {
             </div>
           </div>
 
+          {/* Priority Filter */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-              <Filter className="w-4 h-4 mr-1" />
+            <p className="text-sm font-bold text-gray-700 mb-3 flex items-center uppercase tracking-wide">
+              <Filter className="w-4 h-4 mr-2 text-indigo-600" />
               Priority
             </p>
             <div className="flex flex-wrap gap-2">
@@ -134,9 +174,9 @@ export default function TicketsListPage() {
                 <button
                   key={priority}
                   onClick={() => toggleFilter('priority', priority)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 capitalize ${
                     priorityFilter?.includes(priority)
-                      ? 'bg-primary-600 text-white'
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -146,74 +186,109 @@ export default function TicketsListPage() {
             </div>
           </div>
         </div>
+
+        {/* Include Resolved Checkbox */}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <label className="flex items-center cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={includeResolved}
+              onChange={(e) => {
+                const newValue = e.target.checked;
+                setIncludeResolved(newValue);
+                const params = new URLSearchParams(searchParams);
+                if (newValue) {
+                  params.set('includeResolved', 'true');
+                } else {
+                  params.delete('includeResolved');
+                }
+                setSearchParams(params);
+              }}
+              className="w-5 h-5 text-indigo-600 bg-white border-2 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
+            <span className="ml-3 text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">
+              Include Resolved & Closed Tickets
+            </span>
+          </label>
+        </div>
       </div>
 
       {/* Tickets List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {data?.total || 0} Tickets
+      <div className="card-modern">
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+          <div className="flex items-center">
+            <Sparkles className="w-6 h-6 text-indigo-600 mr-2" />
+            <h2 className="text-2xl font-bold text-gray-900">
+              {data?.total || 0} {data?.total === 1 ? 'Ticket' : 'Tickets'}
             </h2>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="px-6 py-12 text-center text-gray-500">
-            Loading tickets...
+          <div className="py-16 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4 animate-pulse">
+              <TicketIcon className="w-8 h-8 text-indigo-600" />
+            </div>
+            <p className="text-gray-500 font-medium">Loading tickets...</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {data?.tickets.map((ticket) => (
+          <div className="space-y-3">
+            {data?.tickets.map((ticket, index) => (
               <Link
                 key={ticket.id}
                 to={`/tickets/${ticket.ticket_number}`}
-                className="block px-6 py-4 hover:bg-gray-50 transition-colors"
+                className="block p-5 bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300 border-2 border-transparent hover:border-indigo-200 group animate-slide-in-right"
+                style={{ animationDelay: `${index * 30}ms` }}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <p className="text-sm font-mono font-medium text-gray-900">
+                    <div className="flex items-center flex-wrap gap-2 mb-3">
+                      <span className="text-sm font-bold text-gray-900 font-mono bg-white px-3 py-1.5 rounded-lg shadow-sm border border-gray-200">
                         {ticket.ticket_number}
-                      </p>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
-                        {ticket.priority}
                       </span>
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(ticket.status)}`}>
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${getPriorityColor(ticket.priority)} shadow-sm`}>
+                        {ticket.priority.toUpperCase()}
+                      </span>
+                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border ${getStatusColor(ticket.status)}`}>
                         {ticket.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-900 font-medium mb-1">
+                    <p className="text-base font-semibold text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">
                       {ticket.brand_name}
                     </p>
-                    <p className="text-sm text-gray-500 line-clamp-2">
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">
                       {ticket.description || 'No description'}
                     </p>
-                    <div className="mt-2 flex items-center text-xs text-gray-500">
-                      <span>Created by {ticket.creator_name || ticket.creator_email}</span>
+                    <div className="flex items-center flex-wrap gap-3 text-xs text-gray-500">
+                      <span className="flex items-center bg-white px-3 py-1 rounded-full">
+                        <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
+                        {ticket.creator_name || ticket.creator_email}
+                      </span>
                       {ticket.assignee_name && (
-                        <>
-                          <span className="mx-2">•</span>
-                          <span>Assigned to {ticket.assignee_name}</span>
-                        </>
+                        <span className="flex items-center bg-white px-3 py-1 rounded-full">
+                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                          Assigned to {ticket.assignee_name}
+                        </span>
                       )}
                     </div>
                   </div>
-                  <div className="ml-4 text-right">
-                    <p className="text-xs text-gray-500">
-                      {new Date(ticket.created_at).toLocaleDateString()}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(ticket.created_at).toLocaleTimeString()}
-                    </p>
+                  <div className="ml-4 flex flex-col items-end">
+                    <span className="text-xs font-medium text-gray-500 bg-white px-3 py-1 rounded-full mb-2">
+                      {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                   </div>
                 </div>
               </Link>
             ))}
 
             {(!data?.tickets || data.tickets.length === 0) && (
-              <div className="px-6 py-12 text-center text-gray-500">
-                No tickets found
+              <div className="py-16 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                  <TicketIcon className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500 font-medium mb-2">No tickets found</p>
+                <p className="text-sm text-gray-400">Try adjusting your filters or search query</p>
               </div>
             )}
           </div>
