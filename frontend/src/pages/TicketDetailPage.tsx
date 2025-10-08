@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { attachmentService } from '../services/attachmentService';
+import { adminService } from '../services/adminService';
 import { useAuthStore } from '../stores/authStore';
-import { ArrowLeft, Clock, User, AlertCircle, File, Download, Trash2, Paperclip, Eye } from 'lucide-react';
+import { ArrowLeft, Clock, User, AlertCircle, File, Download, Trash2, Paperclip, Eye, Zap } from 'lucide-react';
 import { TicketStatus } from '../types';
 import FileUpload from '../components/FileUpload';
 import FilePreviewModal from '../components/FilePreviewModal';
@@ -20,6 +21,11 @@ export default function TicketDetailPage() {
   const [resolveFiles, setResolveFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
   const [previewAttachment, setPreviewAttachment] = useState<any>(null);
+  
+  // Admin controls
+  const [showForceStatusModal, setShowForceStatusModal] = useState(false);
+  const [forceStatus, setForceStatus] = useState<TicketStatus>('open');
+  const [forceReason, setForceReason] = useState('');
 
   const { data: ticketData, isLoading } = useQuery({
     queryKey: ['ticket', ticketNumber],
@@ -41,12 +47,14 @@ export default function TicketDetailPage() {
 
   const resolveMutation = useMutation({
     mutationFn: async () => {
-      await ticketService.resolveTicket(ticketNumber!, { remarks: resolveRemarks });
-      
-      // Upload resolution files if any
+      // Upload resolution files FIRST (if any), before resolving ticket
+      // This way if upload fails, ticket stays in "open" state
       if (resolveFiles.length > 0) {
         await attachmentService.uploadFiles(ticketNumber!, resolveFiles);
       }
+      
+      // Then resolve the ticket
+      await ticketService.resolveTicket(ticketNumber!, { remarks: resolveRemarks });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
@@ -130,6 +138,31 @@ export default function TicketDetailPage() {
     },
   });
 
+  // Admin mutations
+  const deleteTicketMutation = useMutation({
+    mutationFn: () => adminService.deleteTicket(ticketNumber!),
+    onSuccess: () => {
+      navigate('/tickets');
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.error || 'Failed to delete ticket');
+    },
+  });
+
+  const forceStatusMutation = useMutation({
+    mutationFn: () => adminService.forceStatusChange(ticketNumber!, forceStatus, forceReason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
+      queryClient.invalidateQueries({ queryKey: ['ticket-activities', ticketNumber] });
+      setShowForceStatusModal(false);
+      setForceReason('');
+      setError('');
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.error || 'Failed to force status change');
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -193,6 +226,42 @@ export default function TicketDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Admin Controls Bar */}
+          {user?.role === 'admin' && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Zap className="w-5 h-5 text-purple-600 mr-2" />
+                  <span className="text-sm font-semibold text-purple-900">Admin Controls</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowForceStatusModal(true)}
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-700 bg-white border border-purple-300 rounded-md hover:bg-purple-50"
+                  >
+                    <Zap className="w-3 h-3 mr-1" />
+                    Force Status
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (confirm(`⚠️ Are you sure you want to DELETE ticket ${ticket.ticket_number}?\n\nThis action cannot be undone and will remove:\n- The ticket\n- All activities\n- All attachments\n\nType "DELETE" if you're absolutely sure.`)) {
+                        const confirmation = prompt('Type DELETE to confirm:');
+                        if (confirmation === 'DELETE') {
+                          deleteTicketMutation.mutate();
+                        }
+                      }
+                    }}
+                    disabled={deleteTicketMutation.isPending}
+                    className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    {deleteTicketMutation.isPending ? 'Deleting...' : 'Delete Ticket'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Ticket Header */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-start justify-between mb-4">
@@ -476,12 +545,91 @@ export default function TicketDetailPage() {
         </div>
       </div>
 
-      {/* File Preview Modal */}
-      <FilePreviewModal
-        attachment={previewAttachment}
-        onClose={() => setPreviewAttachment(null)}
-        onDownload={handleDownload}
-      />
-    </div>
-  );
-}
+          {/* File Preview Modal */}
+          <FilePreviewModal
+            attachment={previewAttachment}
+            onClose={() => setPreviewAttachment(null)}
+            onDownload={handleDownload}
+          />
+
+          {/* Force Status Modal (Admin Only) */}
+          {showForceStatusModal && user?.role === 'admin' && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+                <div className="flex items-center mb-4">
+                  <Zap className="w-6 h-6 text-purple-600 mr-2" />
+                  <h3 className="text-xl font-semibold text-gray-900">Force Status Change</h3>
+                </div>
+                
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ This bypasses normal workflow rules. Use only when necessary.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      New Status
+                    </label>
+                    <select
+                      value={forceStatus}
+                      onChange={(e) => setForceStatus(e.target.value as TicketStatus)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="open">Open</option>
+                      <option value="processed">Processed</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="re-opened">Re-opened</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Reason (Required)
+                    </label>
+                    <textarea
+                      value={forceReason}
+                      onChange={(e) => setForceReason(e.target.value)}
+                      rows={3}
+                      placeholder="Explain why you're forcing this status change..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      required
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-sm text-red-700">{error}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForceStatusModal(false);
+                        setForceReason('');
+                        setError('');
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => forceStatusMutation.mutate()}
+                      disabled={!forceReason.trim() || forceStatusMutation.isPending}
+                      className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {forceStatusMutation.isPending ? 'Forcing...' : 'Force Status Change'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }

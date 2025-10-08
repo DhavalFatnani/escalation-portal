@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Ticket, Plus, LogOut } from 'lucide-react';
+import { Home, Ticket, Plus, LogOut, Users, Shield } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 export default function Layout() {
@@ -23,13 +23,22 @@ export default function Layout() {
                 <Link
                   to="/"
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive('/') 
-                      ? 'bg-primary-50 text-primary-700' 
+                    isActive('/') && location.pathname === '/'
+                      ? user?.role === 'admin' ? 'bg-purple-50 text-purple-700' : 'bg-primary-50 text-primary-700'
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  <Home className="w-4 h-4 mr-2" />
-                  Dashboard
+                  {user?.role === 'admin' ? (
+                    <>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin Dashboard
+                    </>
+                  ) : (
+                    <>
+                      <Home className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </>
+                  )}
                 </Link>
                 
                 <Link
@@ -55,6 +64,20 @@ export default function Layout() {
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     New Ticket
+                  </Link>
+                )}
+
+                {user?.role === 'admin' && (
+                  <Link
+                    to="/users"
+                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive('/users') 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Users
                   </Link>
                 )}
               </nav>

@@ -53,6 +53,7 @@ router.post('/login', validate(authSchemas.login), async (req, res, next) => {
         email: user.email,
         name: user.name,
         role: user.role,
+        must_change_password: user.must_change_password || false,
       },
     });
   } catch (error) {
@@ -87,6 +88,75 @@ router.post('/register', async (req, res, next) => {
     logger.info(`User registered: ${email}`);
 
     res.status(201).json({ user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Sign up endpoint for new users (public registration)
+router.post('/signup', async (req, res, next) => {
+  try {
+    const { email, password, name } = req.body;
+
+    // Validation
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email address' });
+    }
+
+    // Password strength validation
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one uppercase letter' });
+    }
+
+    if (!/[a-z]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one lowercase letter' });
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one number' });
+    }
+
+    // Check if user exists
+    const existing = await query(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'An account with this email already exists' });
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create user with 'growth' role by default
+    const result = await query(
+      'INSERT INTO users (email, name, role, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role',
+      [email.toLowerCase(), name.trim(), 'growth', passwordHash]
+    );
+
+    const user = result.rows[0];
+    logger.info(`New user signed up: ${email} (${name})`);
+
+    res.status(201).json({ 
+      message: 'Account created successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      }
+    });
   } catch (error) {
     next(error);
   }

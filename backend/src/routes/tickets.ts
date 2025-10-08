@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { requireAuth, requireGrowth, requireOps, AuthRequest } from '../middleware/auth';
 import { validate, ticketSchemas } from '../middleware/validation';
 import { ticketService } from '../services/ticketService';
+import { query } from '../config/database';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -50,9 +52,17 @@ router.get('/:ticket_number', async (req: AuthRequest, res, next) => {
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
-    // Check permissions: Growth can only see their own tickets
-    if (req.user!.role === 'growth' && ticket.created_by !== req.user!.id) {
-      return res.status(403).json({ error: 'Access denied' });
+    // Check permissions: Growth users can see tickets from ANY growth team member
+    if (req.user!.role === 'growth') {
+      // Check if ticket was created by a growth team member
+      const creatorResult = await query(
+        'SELECT role FROM users WHERE id = $1',
+        [ticket.created_by]
+      );
+      
+      if (creatorResult.rows.length === 0 || creatorResult.rows[0].role !== 'growth') {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     res.json({ ticket });
@@ -61,13 +71,14 @@ router.get('/:ticket_number', async (req: AuthRequest, res, next) => {
   }
 });
 
-// Update ticket
-router.patch('/:ticket_number', validate(ticketSchemas.update), async (req: AuthRequest, res, next) => {
+// Update ticket (Admin can update any field, others limited)
+router.patch('/:ticket_number', async (req: AuthRequest, res, next) => {
   try {
     const ticket = await ticketService.updateTicket(
       req.params.ticket_number,
       req.body,
-      req.user!.id
+      req.user!.id,
+      req.user!.role
     );
     res.json({ ticket });
   } catch (error) {
@@ -121,6 +132,67 @@ router.get('/:ticket_number/activities', async (req: AuthRequest, res, next) => 
   try {
     const activities = await ticketService.getTicketActivities(req.params.ticket_number);
     res.json({ activities });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Delete ticket (Admin only)
+router.delete('/:ticket_number', async (req: AuthRequest, res, next) => {
+  try {
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can delete tickets' });
+    }
+
+    const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    await query('DELETE FROM tickets WHERE ticket_number = $1', [req.params.ticket_number]);
+    
+    logger.info(`Ticket deleted: ${req.params.ticket_number} by admin ${req.user!.email}`);
+    res.json({ message: 'Ticket deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Force status change (Admin only)
+router.post('/:ticket_number/force-status', async (req: AuthRequest, res, next) => {
+  try {
+    if (req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Only admins can force status changes' });
+    }
+
+    const { status, reason } = req.body;
+    
+    if (!status || !['open', 'processed', 'resolved', 're-opened', 'closed'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    await query(
+      `UPDATE tickets SET status = $1, updated_at = now(), last_status_change_at = now() 
+       WHERE ticket_number = $2`,
+      [status, req.params.ticket_number]
+    );
+
+    // Log activity
+    await query(
+      `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
+       VALUES ($1, $2, 'status_forced', $3, now())`,
+      [ticket.id, req.user!.id, reason || `Admin forced status change to: ${status}`]
+    );
+
+    logger.info(`Ticket status forced: ${req.params.ticket_number} → ${status} by admin ${req.user!.email}`);
+    
+    const updatedTicket = await ticketService.getTicketByNumber(req.params.ticket_number);
+    res.json({ ticket: updatedTicket });
   } catch (error) {
     next(error);
   }

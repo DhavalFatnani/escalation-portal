@@ -17,6 +17,11 @@ export default function CreateTicketPage() {
   });
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
+  
+  // Custom inputs for "Other" selections
+  const [customIssueType, setCustomIssueType] = useState('');
+  const [customExpectedOutput, setCustomExpectedOutput] = useState('');
+  const [selectedExpectedOutput, setSelectedExpectedOutput] = useState('');
 
   const createMutation = useMutation({
     mutationFn: async (formData: CreateTicketDTO) => {
@@ -47,7 +52,22 @@ export default function CreateTicketPage() {
       return;
     }
 
-    createMutation.mutate(formData);
+    // Prepare final data with custom values if "Other" was selected
+    const finalData = { ...formData };
+    
+    // If issue type is "other" and custom value is provided
+    if (formData.issue_type === 'other' && customIssueType.trim()) {
+      finalData.issue_type = customIssueType.trim() as IssueType;
+    }
+    
+    // If expected output is "Other:" and custom value is provided
+    if (selectedExpectedOutput === 'Other:' && customExpectedOutput.trim()) {
+      finalData.expected_output = customExpectedOutput.trim();
+    } else if (selectedExpectedOutput) {
+      finalData.expected_output = selectedExpectedOutput;
+    }
+
+    createMutation.mutate(finalData);
   };
 
   const issueTypes: { value: IssueType; label: string }[] = [
@@ -55,6 +75,14 @@ export default function CreateTicketPage() {
     { value: 'giant_discrepancy_brandless_inverterless', label: 'Giant Discrepancy (Brandless/Inverterless)' },
     { value: 'physical_vs_scale_mismatch', label: 'Physical vs Scale Mismatch' },
     { value: 'other', label: 'Other' },
+  ];
+
+  const expectedOutputOptions = [
+    'SKU Level sheet (with Reason for not Live or went Live)',
+    'SKU Level sheet (with Updated Products Received Qty)',
+    'Images',
+    'SKU Level sheet (with Remarks)',
+    'Other',
   ];
 
   const priorities: TicketPriority[] = ['urgent', 'high', 'medium', 'low'];
@@ -119,7 +147,13 @@ export default function CreateTicketPage() {
             <select
               id="issue_type"
               value={formData.issue_type || ''}
-              onChange={(e) => setFormData({ ...formData, issue_type: e.target.value as IssueType || undefined })}
+              onChange={(e) => {
+                const value = e.target.value as IssueType || undefined;
+                setFormData({ ...formData, issue_type: value });
+                if (value !== 'other') {
+                  setCustomIssueType(''); // Clear custom input if not "Other"
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Select issue type</option>
@@ -129,6 +163,20 @@ export default function CreateTicketPage() {
                 </option>
               ))}
             </select>
+            
+            {/* Custom Issue Type Input (shown when "Other" is selected) */}
+            {formData.issue_type === 'other' && (
+              <div className="mt-3 animate-fade-in">
+                <input
+                  type="text"
+                  value={customIssueType}
+                  onChange={(e) => setCustomIssueType(e.target.value)}
+                  placeholder="Please specify the issue type..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-blue-50"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           {/* Expected Output */}
@@ -136,14 +184,40 @@ export default function CreateTicketPage() {
             <label htmlFor="expected_output" className="block text-sm font-medium text-gray-700 mb-2">
               Expected Output
             </label>
-            <input
+            <select
               id="expected_output"
-              type="text"
-              value={formData.expected_output}
-              onChange={(e) => setFormData({ ...formData, expected_output: e.target.value })}
+              value={selectedExpectedOutput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSelectedExpectedOutput(value);
+                if (value !== 'Other:') {
+                  setCustomExpectedOutput(''); // Clear custom input if not "Other"
+                  setFormData({ ...formData, expected_output: value });
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-              placeholder="e.g., Updated images, corrected scale data"
-            />
+            >
+              <option value="">Select expected output</option>
+              {expectedOutputOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            
+            {/* Custom Expected Output Input (shown when "Other:" is selected) */}
+            {selectedExpectedOutput === 'Other:' && (
+              <div className="mt-3 animate-fade-in">
+                <input
+                  type="text"
+                  value={customExpectedOutput}
+                  onChange={(e) => setCustomExpectedOutput(e.target.value)}
+                  placeholder="Please specify the expected output..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-blue-50"
+                  required
+                />
+              </div>
+            )}
           </div>
 
           {/* Priority */}

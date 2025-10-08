@@ -59,37 +59,63 @@ export async function uploadFileToStorage(
   file: Express.Multer.File,
   bucket: string = 'attachments'
 ): Promise<{ url: string; path: string }> {
-  if (!supabase) {
-    throw new Error('Supabase client not initialized. Check your environment variables.');
+  // If Supabase is not configured or storage fails, use base64 fallback
+  if (!supabase || !process.env.SUPABASE_ANON_KEY) {
+    // Fallback: Return base64 data URL
+    const base64 = file.buffer.toString('base64');
+    const dataUrl = `data:${file.mimetype};base64,${base64}`;
+    return {
+      url: dataUrl,
+      path: 'base64-inline',
+    };
   }
 
-  // Generate unique filename
-  const timestamp = Date.now();
-  const ext = path.extname(file.originalname);
-  const filename = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
-  const filePath = `uploads/${filename}`;
+  try {
+    // Generate unique filename
+    const timestamp = Date.now();
+    const ext = path.extname(file.originalname);
+    const filename = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
+    const filePath = `uploads/${filename}`;
 
-  // Upload to Supabase Storage
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file.buffer, {
-      contentType: file.mimetype,
-      cacheControl: '3600',
-    });
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        cacheControl: '3600',
+        upsert: false,
+      });
 
-  if (error) {
-    throw new Error(`Failed to upload file: ${error.message}`);
+    if (error) {
+      console.warn(`Supabase storage upload failed: ${error.message}, falling back to base64`);
+      // Fallback to base64
+      const base64 = file.buffer.toString('base64');
+      const dataUrl = `data:${file.mimetype};base64,${base64}`;
+      return {
+        url: dataUrl,
+        path: 'base64-inline',
+      };
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+
+    return {
+      url: urlData.publicUrl,
+      path: data.path,
+    };
+  } catch (error) {
+    console.warn('Supabase storage error, falling back to base64:', error);
+    // Fallback to base64
+    const base64 = file.buffer.toString('base64');
+    const dataUrl = `data:${file.mimetype};base64,${base64}`;
+    return {
+      url: dataUrl,
+      path: 'base64-inline',
+    };
   }
-
-  // Get public URL
-  const { data: urlData } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(data.path);
-
-  return {
-    url: urlData.publicUrl,
-    path: data.path,
-  };
 }
 
 export async function deleteFileFromStorage(

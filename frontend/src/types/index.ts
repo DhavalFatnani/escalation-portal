@@ -15,6 +15,7 @@ export interface User {
   email: string;
   name: string | null;
   role: UserRole;
+  must_change_password?: boolean;
 }
 
 export interface Ticket {

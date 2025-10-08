@@ -70,10 +70,11 @@ export class TicketService {
     let paramCount = 0;
 
     // Role-based filtering
-    if (userRole === 'growth' && userId) {
-      whereClause += ` AND t.created_by = $${++paramCount}`;
-      params.push(userId);
+    // Growth users see all tickets created by ANY growth team member (team-based access)
+    if (userRole === 'growth') {
+      whereClause += ` AND t.created_by IN (SELECT id FROM users WHERE role = 'growth')`;
     }
+    // Ops and Admin see all tickets (no additional filter needed)
 
     if (filters.status && filters.status.length > 0) {
       whereClause += ` AND t.status = ANY($${++paramCount})`;
@@ -169,7 +170,7 @@ export class TicketService {
     return result.rows[0] || null;
   }
 
-  async updateTicket(ticketNumber: string, data: UpdateTicketDTO, userId: string): Promise<Ticket> {
+  async updateTicket(ticketNumber: string, data: UpdateTicketDTO, userId: string, userRole?: string): Promise<Ticket> {
     const client = await getClient();
     
     try {
@@ -184,6 +185,7 @@ export class TicketService {
       const params: any[] = [];
       let paramCount = 0;
 
+      // Admins can update any field
       if (data.brand_name !== undefined) {
         updates.push(`brand_name = $${++paramCount}`);
         params.push(data.brand_name);
