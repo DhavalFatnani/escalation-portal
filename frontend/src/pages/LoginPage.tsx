@@ -35,7 +35,7 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shadow-lg mb-4">
-            <img src="/logo.svg" alt="KNOT Logo" className="w-12 h-12 rounded-xl" />
+            <img src="/logo.svg" alt="KNOT Logo" className="w-16 h-16 rounded-xl" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Escalation Portal
