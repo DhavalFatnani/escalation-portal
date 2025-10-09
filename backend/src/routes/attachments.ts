@@ -148,11 +148,17 @@ router.get('/tickets/:ticket_number/attachments', async (req: AuthRequest, res, 
 
     const ticket = ticketResult.rows[0];
 
-    // Check permissions
-    if (
-      req.user!.role === 'growth' &&
-      ticket.created_by !== req.user!.id
-    ) {
+    // Check permissions: Bidirectional workflow support
+    // Allow viewing attachments if user can view the ticket:
+    // 1. Ops/Admin can view any ticket's attachments
+    // 2. Growth can view attachments on tickets they created
+    // 3. Growth can view attachments on tickets assigned to them (processing)
+    // 4. Growth can view attachments on Ops-created tickets (bidirectional workflow)
+    const isOpsOrAdmin = req.user!.role === 'ops' || req.user!.role === 'admin';
+    const isCreator = ticket.created_by === req.user!.id;
+    const isAssignee = ticket.current_assignee === req.user!.id;
+    
+    if (!isOpsOrAdmin && !isCreator && !isAssignee) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
