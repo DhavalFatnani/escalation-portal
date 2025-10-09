@@ -170,6 +170,8 @@ router.post('/:ticket_number/reopen', validate(ticketSchemas.reopen), async (req
 // Close ticket (mark as resolved) - Creator team can close
 router.post('/:ticket_number/close', async (req: AuthRequest, res, next) => {
   try {
+    const { acceptance_remarks } = req.body;
+    
     // Get ticket to check who created it
     const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
     if (!ticket) {
@@ -192,7 +194,8 @@ router.post('/:ticket_number/close', async (req: AuthRequest, res, next) => {
 
     const closedTicket = await ticketService.closeTicket(
       req.params.ticket_number,
-      req.user!.id
+      req.user!.id,
+      acceptance_remarks
     );
     res.json({ ticket: closedTicket });
   } catch (error) {

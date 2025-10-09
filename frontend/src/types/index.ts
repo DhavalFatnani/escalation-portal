@@ -36,6 +36,7 @@ export interface Ticket {
   resolution_remarks: string | null;
   primary_resolution_remarks: string | null;
   reopen_reason: string | null;
+  acceptance_remarks: string | null;
   creator_name?: string;
   creator_email?: string;
   creator_role?: UserRole;

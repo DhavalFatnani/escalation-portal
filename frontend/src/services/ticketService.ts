@@ -42,8 +42,10 @@ export const ticketService = {
     return response.data;
   },
 
-  async closeTicket(ticketNumber: string): Promise<{ ticket: Ticket }> {
-    const response = await api.post(`/tickets/${ticketNumber}/close`);
+  async closeTicket(ticketNumber: string, acceptanceRemarks?: string): Promise<{ ticket: Ticket }> {
+    const response = await api.post(`/tickets/${ticketNumber}/close`, {
+      acceptance_remarks: acceptanceRemarks,
+    });
     return response.data;
   },
 

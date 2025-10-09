@@ -18,6 +18,7 @@ export default function TicketDetailPage() {
 
   const [resolveRemarks, setResolveRemarks] = useState('');
   const [reopenReason, setReopenReason] = useState('');
+  const [acceptanceRemarks, setAcceptanceRemarks] = useState('');
   const [resolveFiles, setResolveFiles] = useState<File[]>([]);
   const [reopenFiles, setReopenFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
@@ -325,10 +326,11 @@ export default function TicketDetailPage() {
   });
 
   const closeMutation = useMutation({
-    mutationFn: () => ticketService.closeTicket(ticketNumber!),
+    mutationFn: () => ticketService.closeTicket(ticketNumber!, acceptanceRemarks || undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['ticket-activities', ticketNumber] });
+      setAcceptanceRemarks('');
       setError('');
     },
     onError: (err: any) => {
@@ -672,6 +674,22 @@ export default function TicketDetailPage() {
             </div>
           )}
 
+          {/* Acceptance Remarks (shown when ticket is resolved) */}
+          {ticket.acceptance_remarks && ticket.status === 'resolved' && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-6 shadow-md">
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  ✅ Acceptance Remarks
+                </h3>
+                <span className="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">
+                  Resolved
+                </span>
+              </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                {ticket.acceptance_remarks}
+              </p>
+            </div>
+          )}
 
           {/* Action Forms */}
           {canResolve && (
@@ -747,6 +765,19 @@ export default function TicketDetailPage() {
                   onFilesChange={setReopenFiles}
                   maxFiles={5}
                   maxSizeMB={20}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Acceptance Remarks (Optional)
+                </label>
+                <textarea
+                  value={acceptanceRemarks}
+                  onChange={(e) => setAcceptanceRemarks(e.target.value)}
+                  rows={2}
+                  placeholder="Add any remarks or feedback about the resolution..."
+                  className="w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
 

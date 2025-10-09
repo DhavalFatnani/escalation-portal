@@ -373,7 +373,7 @@ export class TicketService {
     }
   }
 
-  async closeTicket(ticketNumber: string, userId: string): Promise<Ticket> {
+  async closeTicket(ticketNumber: string, userId: string, acceptanceRemarks?: string): Promise<Ticket> {
     const client = await getClient();
     
     try {
@@ -391,18 +391,23 @@ export class TicketService {
       const result = await client.query(
         `UPDATE tickets 
          SET status = 'resolved',
+             acceptance_remarks = $2,
              resolved_at = now(),
              last_status_change_at = now(),
              updated_at = now()
          WHERE ticket_number = $1
          RETURNING *`,
-        [ticketNumber]
+        [ticketNumber, acceptanceRemarks || null]
       );
+
+      const activityComment = acceptanceRemarks 
+        ? `Ticket accepted and closed. Remarks: ${acceptanceRemarks}`
+        : 'Ticket accepted and closed';
 
       await client.query(
         `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
-         VALUES ($1, $2, 'closed', 'Ticket marked as resolved', now())`,
-        [ticket.id, userId]
+         VALUES ($1, $2, 'closed', $3, now())`,
+        [ticket.id, userId, activityComment]
       );
 
       await client.query('COMMIT');
