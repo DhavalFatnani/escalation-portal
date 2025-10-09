@@ -15,15 +15,34 @@ api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  } else {
+    // Check localStorage directly as fallback
+    try {
+      const stored = localStorage.getItem('auth-storage');
+      if (stored) {
+        const authData = JSON.parse(stored);
+        if (authData.token) {
+          config.headers.Authorization = `Bearer ${authData.token}`;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to read auth token:', error);
+    }
   }
   return config;
 });
 
-// Handle 401 errors
+// Handle 401 and 403 errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      console.error('Authentication failed - redirecting to login');
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+    }
+    if (error.response?.status === 403 && error.response?.data?.error === 'No token provided') {
+      console.error('No authentication token - redirecting to login');
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }
