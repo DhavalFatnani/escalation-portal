@@ -55,6 +55,12 @@ export default function UsersManagementPage() {
     mutationFn: userService.deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      alert('✅ User deleted successfully');
+    },
+    onError: (err: any) => {
+      const errorMessage = err.response?.data?.error || 'Failed to delete user';
+      const errorDetails = err.response?.data?.details || '';
+      alert(`❌ ${errorMessage}\n\n${errorDetails}`);
     },
   });
 
