@@ -42,12 +42,18 @@ router.post(
 
       const ticket = ticketResult.rows[0];
 
-      // Check permissions: Creator or Ops/Admin can upload
-      if (
-        req.user!.role !== 'ops' &&
-        req.user!.role !== 'admin' &&
-        ticket.created_by !== req.user!.id
-      ) {
+      // Check permissions: Bidirectional workflow support
+      // Allow:
+      // 1. Ticket creator (can add initial/reopen attachments)
+      // 2. Assigned user (can add resolution attachments)
+      // 3. Ops/Admin (can add to any ticket)
+      // 4. Growth user processing an Ops-created ticket
+      const isCreator = ticket.created_by === req.user!.id;
+      const isAssignee = ticket.current_assignee === req.user!.id;
+      const isOpsOrAdmin = req.user!.role === 'ops' || req.user!.role === 'admin';
+      const isGrowthProcessingOpsTicket = req.user!.role === 'growth' && ticket.created_by !== req.user!.id;
+      
+      if (!isCreator && !isAssignee && !isOpsOrAdmin && !isGrowthProcessingOpsTicket) {
         return res.status(403).json({ error: 'Access denied' });
       }
 
