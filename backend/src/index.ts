@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import ticketRoutes from './routes/tickets';
 import userRoutes from './routes/users';
 import attachmentRoutes from './routes/attachments';
+import adminRoutes from './routes/admin';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api', attachmentRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

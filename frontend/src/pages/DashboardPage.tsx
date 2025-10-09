@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { Link } from 'react-router-dom';
-import { Ticket, AlertCircle, Clock, CheckCircle, Plus, TrendingUp, ArrowRight, Sparkles } from 'lucide-react';
+import { Ticket, AlertCircle, Clock, CheckCircle, Plus, TrendingUp, ArrowRight } from 'lucide-react';
 import { TicketStatus } from '../types';
 import { useAuthStore } from '../stores/authStore';
 
@@ -81,11 +81,10 @@ export default function DashboardPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-2 flex items-center">
-            <span className="text-gradient">Dashboard</span>
-            <Sparkles className="w-6 h-6 ml-2 text-indigo-600 animate-pulse" />
+          <h1 className="text-2xl font-bold text-gradient mb-1">
+            Dashboard
           </h1>
-          <p className="text-base text-gray-600">
+          <p className="text-sm text-gray-600">
             Welcome back, <span className="font-semibold text-gray-900">{user?.name || user?.email}</span> 👋
           </p>
         </div>
@@ -93,9 +92,9 @@ export default function DashboardPage() {
         {user?.role === 'growth' && (
           <Link
             to="/tickets/new"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+            className="btn-primary"
           >
-            <Plus className="w-5 h-5 mr-2" />
+            <Plus className="w-4 h-4 mr-2" />
             New Ticket
           </Link>
         )}

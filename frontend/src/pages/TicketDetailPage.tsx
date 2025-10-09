@@ -22,6 +22,10 @@ export default function TicketDetailPage() {
   const [reopenFiles, setReopenFiles] = useState<File[]>([]);
   const [error, setError] = useState('');
   const [previewAttachment, setPreviewAttachment] = useState<any>(null);
+  const [deletingAttachment, setDeletingAttachment] = useState<any>(null);
+  const [deletionReason, setDeletionReason] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [showOTPModal, setShowOTPModal] = useState(false);
   
   // Admin controls
   const [showForceStatusModal, setShowForceStatusModal] = useState(false);
@@ -51,7 +55,7 @@ export default function TicketDetailPage() {
       // Upload resolution files FIRST (if any), before resolving ticket
       // This way if upload fails, ticket stays in "open" state
       if (resolveFiles.length > 0) {
-        await attachmentService.uploadFiles(ticketNumber!, resolveFiles);
+        await attachmentService.uploadFiles(ticketNumber!, resolveFiles, 'resolution');
       }
       
       // Then resolve the ticket
@@ -70,12 +74,195 @@ export default function TicketDetailPage() {
     },
   });
 
-  const deleteAttachmentMutation = useMutation({
-    mutationFn: (attachmentId: string) => attachmentService.deleteAttachment(attachmentId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ticket-attachments', ticketNumber] });
+  const requestDeletionMutation = useMutation({
+    mutationFn: ({ attachmentId, reason }: { attachmentId: string; reason: string }) => 
+      attachmentService.requestDeletion(attachmentId, reason),
+    onSuccess: (data) => {
+      setDeletingAttachment(null);
+      setDeletionReason('');
+      setError('');
+      alert(data.message || 'Deletion request submitted successfully. You will be notified when approved.');
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.error || 'Failed to submit deletion request.');
     },
   });
+
+  const deleteAttachmentMutation = useMutation({
+    mutationFn: ({ attachmentId, otp }: { attachmentId: string; otp: string }) => 
+      attachmentService.deleteAttachment(attachmentId, otp),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ticket-attachments', ticketNumber] });
+      setShowOTPModal(false);
+      setDeletingAttachment(null);
+      setOtpCode('');
+      setError('');
+      alert('File deleted successfully!');
+    },
+    onError: (err: any) => {
+      setError(err.response?.data?.error || 'Failed to delete attachment. Please check the OTP code.');
+    },
+  });
+
+  // Categorize attachments by upload context and chronological order
+  const categorizeAttachments = () => {
+    if (!attachmentsData?.attachments || !activitiesData?.activities) {
+      return { initial: [], primaryResolution: [], reopen: [], updatedResolution: [] };
+    }
+
+    const initial: any[] = [];
+    const primaryResolution: any[] = [];
+    const reopen: any[] = [];
+    const updatedResolution: any[] = [];
+
+    // Find the timestamp of the first reopen activity (if any)
+    const sortedActivities = [...activitiesData.activities].sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+    const firstReopenActivity = sortedActivities.find(
+      (a) => a.action === 'reopened' || a.action === 'status_changed_to_open'
+    );
+    const reopenTime = firstReopenActivity ? new Date(firstReopenActivity.created_at).getTime() : null;
+
+    attachmentsData.attachments.forEach((attachment: any) => {
+      const attachmentTime = new Date(attachment.created_at).getTime();
+
+      switch (attachment.upload_context) {
+        case 'initial':
+          initial.push(attachment);
+          break;
+        case 'resolution':
+          // If there was a reopen, split resolution files into primary and updated
+          if (reopenTime && attachmentTime < reopenTime) {
+            primaryResolution.push(attachment);
+          } else if (reopenTime && attachmentTime > reopenTime) {
+            updatedResolution.push(attachment);
+          } else {
+            // No reopen, or exactly at reopen time - put in primary
+            primaryResolution.push(attachment);
+          }
+          break;
+        case 'reopen':
+          reopen.push(attachment);
+          break;
+        default:
+          // Fallback for 'additional' or unknown context
+          updatedResolution.push(attachment);
+          break;
+      }
+    });
+
+    return { initial, primaryResolution, reopen, updatedResolution };
+  };
+
+  const { initial, primaryResolution, reopen, updatedResolution } = categorizeAttachments();
+
+  // Get resolution info from ticket data
+  const getResolutions = () => {
+    if (!ticketData?.ticket) {
+      return { primary: null, updated: null, hasReopen: false };
+    }
+
+    const ticket = ticketData.ticket;
+    const hasReopen = !!ticket.reopen_reason;
+
+    // If ticket has been reopened, we have separate primary and updated resolutions
+    if (hasReopen) {
+      return {
+        primary: ticket.primary_resolution_remarks,
+        updated: ticket.resolution_remarks,
+        hasReopen: true
+      };
+    }
+
+    // No reopen, just one resolution
+    return {
+      primary: null,
+      updated: ticket.resolution_remarks,
+      hasReopen: false
+    };
+  };
+
+  const resolutionInfo = getResolutions();
+
+  // Render attachment file component
+  const renderAttachment = (attachment: any) => (
+    <div
+      key={attachment.id}
+      className="flex items-start justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-indigo-300 hover:shadow-sm transition-all"
+    >
+      <div className="flex items-start flex-1 min-w-0">
+        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+          <File className="w-5 h-5 text-indigo-600" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-gray-900 truncate mb-1">
+            {attachment.filename}
+          </p>
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {attachment.file_size && (
+              <span className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded font-medium">
+                {(attachment.file_size / 1024).toFixed(1)} KB
+              </span>
+            )}
+            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded font-medium">
+              {attachment.uploader_name || attachment.uploader_email}
+            </span>
+            {attachment.created_at && (
+              <span className="text-gray-500">
+                <Clock className="w-3 h-3 inline mr-1" />
+                {new Date(attachment.created_at).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-1 ml-3 flex-shrink-0">
+        <button
+          onClick={() => setPreviewAttachment(attachment)}
+          className="text-blue-600 hover:text-blue-700 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+          title="Preview file"
+        >
+          <Eye className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => handleDownload(attachment)}
+          className="text-indigo-600 hover:text-indigo-700 p-2 rounded-lg hover:bg-indigo-50 transition-colors"
+          title="Download file"
+        >
+          <Download className="w-4 h-4" />
+        </button>
+        {(user?.role === 'admin' || attachment.uploaded_by === user?.id || ticket?.created_by === user?.id) && (
+          <>
+            <button
+              onClick={() => {
+                setDeletingAttachment(attachment);
+                setShowOTPModal(true);
+              }}
+              className="text-green-600 hover:text-green-700 p-2 rounded-lg hover:bg-green-50 transition-colors"
+              title="Enter OTP to delete file"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setDeletingAttachment(attachment)}
+              className="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+              title="Request file deletion (requires team approval)"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 
   const handleDownload = (attachment: any) => {
     try {
@@ -118,7 +305,7 @@ export default function TicketDetailPage() {
     mutationFn: async () => {
       // Upload reopen files FIRST (if any), before reopening ticket
       if (reopenFiles.length > 0) {
-        await attachmentService.uploadFiles(ticketNumber!, reopenFiles);
+        await attachmentService.uploadFiles(ticketNumber!, reopenFiles, 'reopen');
       }
       
       // Then reopen the ticket
@@ -213,9 +400,23 @@ export default function TicketDetailPage() {
     }
   };
 
-  const canResolve = user?.role === 'ops' && (ticket.status === 'open' || ticket.status === 're-opened');
-  const canReopen = user?.role === 'growth' && ticket.status === 'processed';
-  const canClose = user?.role === 'growth' && ticket.status === 'processed';
+  // Bidirectional permissions:
+  // - Admin can do everything
+  // - Resolve: The opposite team can resolve (Ops resolves Growth tickets, Growth resolves Ops tickets)
+  // - Reopen: Only the creator's team can reopen their own tickets
+  // - Close: Only the creator's team can close their own tickets
+  const canResolve = user?.role === 'admin' 
+    ? (ticket.status === 'open' || ticket.status === 're-opened')
+    : (ticket.creator_role === 'growth' && user?.role === 'ops' && (ticket.status === 'open' || ticket.status === 're-opened')) ||
+      (ticket.creator_role === 'ops' && user?.role === 'growth' && (ticket.status === 'open' || ticket.status === 're-opened'));
+  
+  const canReopen = user?.role === 'admin'
+    ? ticket.status === 'processed'
+    : user?.role === ticket.creator_role && ticket.status === 'processed';
+  
+  const canClose = user?.role === 'admin'
+    ? ticket.status === 'processed'
+    : user?.role === ticket.creator_role && ticket.status === 'processed';
 
   return (
     <div>
@@ -280,7 +481,7 @@ export default function TicketDetailPage() {
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
                   {ticket.ticket_number}
                 </h1>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mb-3">
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(ticket.priority)}`}>
                     {ticket.priority}
                   </span>
@@ -288,6 +489,26 @@ export default function TicketDetailPage() {
                     {ticket.status}
                   </span>
                 </div>
+                {/* Ticket Flow Direction */}
+                {ticket.creator_role && (
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold ${
+                    ticket.creator_role === 'growth' 
+                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300'
+                      : 'bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300'
+                  }`}>
+                    <span className={`px-2 py-1 rounded ${
+                      ticket.creator_role === 'growth' ? 'bg-blue-200 text-blue-800' : 'bg-purple-200 text-purple-800'
+                    }`}>
+                      {ticket.creator_role.toUpperCase()} Team
+                    </span>
+                    <span className="text-gray-600">escalated to</span>
+                    <span className={`px-2 py-1 rounded ${
+                      ticket.creator_role === 'growth' ? 'bg-purple-200 text-purple-800' : 'bg-blue-200 text-blue-800'
+                    }`}>
+                      {ticket.creator_role === 'growth' ? 'OPS' : 'GROWTH'} Team
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -320,101 +541,152 @@ export default function TicketDetailPage() {
                   </p>
                 </div>
               )}
+
+              {/* Initial Files */}
+              {initial.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Paperclip className="w-4 h-4 mr-2" />
+                    Attached Files ({initial.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {initial.map(renderAttachment)}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Resolution Section */}
-          {ticket.resolution_remarks && (
+          {/* Primary Resolution (shown if reopen exists) */}
+          {resolutionInfo.hasReopen && resolutionInfo.primary && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Resolution
-              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Primary Resolution
+                </h3>
+                <span className="px-3 py-1 bg-green-600 text-white text-xs font-semibold rounded-full">
+                  Initial Fix
+                </span>
+              </div>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                {ticket.resolution_remarks}
+                {resolutionInfo.primary}
               </p>
+              
+              {/* Primary Resolution Files */}
+              {primaryResolution.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-green-300">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Paperclip className="w-4 h-4 mr-2" />
+                    Resolution Files ({primaryResolution.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {primaryResolution.map(renderAttachment)}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Reopen Reason */}
           {ticket.reopen_reason && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                Reopen Reason
-              </h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Issue Reopened
+                  </h3>
+                  <span className="px-3 py-1 bg-orange-600 text-white text-xs font-semibold rounded-full">
+                    Reopen Reason
+                  </span>
+                </div>
+                {ticket.status === 're-opened' && (
+                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full border border-yellow-300">
+                    ⏳ Awaiting Updated Resolution
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap mb-4">
                 {ticket.reopen_reason}
               </p>
+
+              {/* Reopen Files */}
+              {reopen.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-orange-300">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Paperclip className="w-4 h-4 mr-2" />
+                    Supporting Files ({reopen.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {reopen.map(renderAttachment)}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Attachments Section */}
-          {attachmentsData && attachmentsData.attachments.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Paperclip className="w-5 h-5 mr-2" />
-                Attachments ({attachmentsData.attachments.length})
-              </h3>
-              <div className="space-y-2">
-                {attachmentsData.attachments.map((attachment: any) => (
-                  <div
-                    key={attachment.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-center flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        <File className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {attachment.filename}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {attachment.file_size && `${(attachment.file_size / 1024).toFixed(1)} KB • `}
-                          Uploaded by {attachment.uploader_name || attachment.uploader_email}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 ml-3">
-                      <button
-                        onClick={() => setPreviewAttachment(attachment)}
-                        className="text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50"
-                        title="Preview file"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDownload(attachment)}
-                        className="text-primary-600 hover:text-primary-700 p-1 rounded hover:bg-primary-50"
-                        title="Download file"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                      {(user?.role === 'admin' || attachment.uploaded_by === user?.id) && (
-                        <button
-                          onClick={() => {
-                            if (confirm('Delete this attachment?')) {
-                              deleteAttachmentMutation.mutate(attachment.id);
-                            }
-                          }}
-                          className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-50"
-                          title="Delete file"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+          {/* Updated Resolution (shown if reopen exists AND ticket is resolved again) OR Resolution (shown if no reopen) */}
+          {ticket.resolution_remarks && (ticket.status === 'processed' || ticket.status === 'resolved' || !resolutionInfo.hasReopen) && (
+            <div className={`border rounded-lg p-6 ${
+              resolutionInfo.hasReopen
+                ? 'bg-gradient-to-r from-blue-50 to-green-50 border-blue-300 shadow-md' 
+                : 'bg-green-50 border-green-200'
+            }`}>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {resolutionInfo.hasReopen ? 'Updated Resolution' : 'Resolution'}
+                </h3>
+                {resolutionInfo.hasReopen && (
+                  <span className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+                    After Reopen
+                  </span>
+                )}
               </div>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap mb-4">
+                {ticket.resolution_remarks}
+              </p>
+
+              {/* Resolution Files (use appropriate set based on whether ticket was reopened) */}
+              {(resolutionInfo.hasReopen ? updatedResolution : primaryResolution).length > 0 && (
+                <div className={`mt-4 pt-4 ${
+                  resolutionInfo.hasReopen ? 'border-t border-blue-300' : 'border-t border-green-300'
+                }`}>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Paperclip className="w-4 h-4 mr-2" />
+                    Resolution Files ({(resolutionInfo.hasReopen ? updatedResolution : primaryResolution).length})
+                  </h4>
+                  <div className="space-y-2">
+                    {(resolutionInfo.hasReopen ? updatedResolution : primaryResolution).map(renderAttachment)}
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
 
           {/* Action Forms */}
           {canResolve && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Add Resolution
-              </h3>
+            <div className={`rounded-lg shadow p-6 ${
+              ticket.reopen_reason 
+                ? 'bg-gradient-to-r from-blue-50 to-white border-2 border-blue-300' 
+                : 'bg-white'
+            }`}>
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {ticket.reopen_reason ? 'Add Updated Resolution' : 'Add Resolution'}
+                </h3>
+                {ticket.reopen_reason && (
+                  <span className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
+                    Reopened Ticket
+                  </span>
+                )}
+              </div>
+              {ticket.reopen_reason && (
+                <div className="mb-4 p-3 bg-blue-100 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> This ticket was previously resolved but reopened. Please provide an updated resolution addressing the reopen reason above.
+                  </p>
+                </div>
+              )}
               <textarea
                 value={resolveRemarks}
                 onChange={(e) => setResolveRemarks(e.target.value)}
@@ -486,38 +758,6 @@ export default function TicketDetailPage() {
               </div>
             </div>
           )}
-
-          {/* Activity Timeline */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Activity Timeline
-            </h3>
-            <div className="space-y-4">
-              {activitiesData?.activities.map((activity, index) => (
-                <div key={activity.id} className="flex">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className="w-2 h-2 rounded-full bg-primary-600" />
-                    {index < (activitiesData.activities.length - 1) && (
-                      <div className="w-0.5 h-full bg-gray-300 mt-1" />
-                    )}
-                  </div>
-                  <div className="flex-1 pb-4">
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.action.replace(/_/g, ' ')}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {activity.actor_name || 'System'} • {new Date(activity.created_at).toLocaleString()}
-                    </p>
-                    {activity.comment && (
-                      <p className="text-sm text-gray-700 mt-2">
-                        {activity.comment}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Sidebar */}
@@ -563,6 +803,38 @@ export default function TicketDetailPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Activity Timeline */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Activity Timeline
+            </h3>
+            <div className="space-y-4">
+              {activitiesData?.activities.map((activity, index) => (
+                <div key={activity.id} className="flex">
+                  <div className="flex flex-col items-center mr-4">
+                    <div className="w-2 h-2 rounded-full bg-primary-600" />
+                    {index < (activitiesData.activities.length - 1) && (
+                      <div className="w-0.5 h-full bg-gray-300 mt-1" />
+                    )}
+                  </div>
+                  <div className="flex-1 pb-4">
+                    <p className="text-sm font-medium text-gray-900">
+                      {activity.action.replace(/_/g, ' ')}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activity.actor_name || 'System'} • {new Date(activity.created_at).toLocaleString()}
+                    </p>
+                    {activity.comment && (
+                      <p className="text-sm text-gray-700 mt-2">
+                        {activity.comment}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -647,6 +919,177 @@ export default function TicketDetailPage() {
                       className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {forceStatusMutation.isPending ? 'Forcing...' : 'Force Status Change'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Request Deletion Modal */}
+          {deletingAttachment && !showOTPModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+                <div className="flex items-center mb-4">
+                  <Trash2 className="w-6 h-6 text-red-600 mr-2" />
+                  <h3 className="text-xl font-semibold text-gray-900">Request File Deletion</h3>
+                </div>
+                
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    <strong>📋 Team Approval Required</strong>
+                  </p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Your deletion request will be sent to the {user?.role === 'growth' ? 'Ops' : 'Growth'} team for approval.
+                  </p>
+                </div>
+
+                <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                  <p className="text-sm text-gray-700">
+                    <strong>File:</strong> {deletingAttachment.filename}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    <strong>Size:</strong> {(deletingAttachment.file_size / 1024).toFixed(1)} KB
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    <strong>Ticket:</strong> {ticket?.ticket_number}
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Reason for Deletion <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={deletionReason}
+                      onChange={(e) => setDeletionReason(e.target.value)}
+                      placeholder="Explain why this file needs to be deleted..."
+                      rows={4}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-900 placeholder-gray-400"
+                      autoFocus
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      The {user?.role === 'growth' ? 'Ops' : 'Growth'} team will review your request and provide an OTP if approved.
+                    </p>
+                  </div>
+
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-sm text-red-700">{error}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeletingAttachment(null);
+                        setDeletionReason('');
+                        setError('');
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOTPModal(true);
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-blue-100 rounded-md hover:bg-blue-200 border border-blue-300"
+                    >
+                      I Have OTP
+                    </button>
+                    <button
+                      onClick={() => requestDeletionMutation.mutate({ attachmentId: deletingAttachment.id, reason: deletionReason })}
+                      disabled={!deletionReason.trim() || requestDeletionMutation.isPending}
+                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {requestDeletionMutation.isPending ? 'Submitting...' : 'Submit Request'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* OTP Entry Modal (shown when user has received OTP) */}
+          {showOTPModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+                <div className="flex items-center mb-4">
+                  <Trash2 className="w-6 h-6 text-green-600 mr-2" />
+                  <h3 className="text-xl font-semibold text-gray-900">Enter Approval OTP</h3>
+                </div>
+                
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm text-green-800">
+                    <strong>✅ Request Approved</strong>
+                  </p>
+                  <p className="text-sm text-green-700 mt-1">
+                    Enter the OTP code you received from the {user?.role === 'growth' ? 'Ops' : 'Growth'} team.
+                  </p>
+                </div>
+
+                {deletingAttachment && (
+                  <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-md">
+                    <p className="text-sm text-gray-700">
+                      <strong>File:</strong> {deletingAttachment.filename}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      <strong>Size:</strong> {(deletingAttachment.file_size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      6-Digit OTP Code
+                    </label>
+                    <input
+                      type="text"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="w-full px-4 py-3 text-2xl font-mono text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 tracking-widest"
+                      autoFocus
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
+                      <span className="text-sm text-red-700">{error}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOTPModal(false);
+                        setDeletingAttachment(null);
+                        setOtpCode('');
+                        setError('');
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (deletingAttachment) {
+                          deleteAttachmentMutation.mutate({ attachmentId: deletingAttachment.id, otp: otpCode });
+                        }
+                      }}
+                      disabled={!deletingAttachment || otpCode.length !== 6 || deleteAttachmentMutation.isPending}
+                      className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {deleteAttachmentMutation.isPending ? 'Deleting...' : 'Delete File'}
                     </button>
                   </div>
                 </div>

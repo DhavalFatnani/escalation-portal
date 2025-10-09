@@ -37,6 +37,7 @@ export interface Ticket {
   reopen_reason: string | null;
   creator_name?: string;
   creator_email?: string;
+  creator_role?: UserRole;
   assignee_name?: string;
 }
 

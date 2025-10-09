@@ -5,9 +5,11 @@ import { ticketService } from '../services/ticketService';
 import { CreateTicketDTO, IssueType, TicketPriority } from '../types';
 import { AlertCircle, ArrowLeft, Check, Sparkles, FileText, AlertTriangle } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
+import { useAuthStore } from '../stores/authStore';
 
 export default function CreateTicketPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState<CreateTicketDTO>({
     brand_name: '',
     description: '',
@@ -30,7 +32,7 @@ export default function CreateTicketPage() {
       // Upload files if any
       if (files.length > 0) {
         const { attachmentService } = await import('../services/attachmentService');
-        await attachmentService.uploadFiles(ticket.ticket_number, files);
+        await attachmentService.uploadFiles(ticket.ticket_number, files, 'initial');
       }
       
       return { ticket };
@@ -115,7 +117,13 @@ export default function CreateTicketPage() {
             </div>
             <div>
               <h1 className="text-3xl font-extrabold text-gray-900">Create New Ticket</h1>
-              <p className="text-gray-600 mt-1">Submit an escalation request to the Ops team</p>
+              <p className="text-gray-600 mt-1">
+                {user?.role === 'growth' 
+                  ? 'Submit an escalation request to the Ops team'
+                  : user?.role === 'ops'
+                  ? 'Submit an escalation request to the Growth team'
+                  : 'Submit an escalation request'}
+              </p>
             </div>
           </div>
         </div>

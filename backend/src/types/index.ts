@@ -37,6 +37,11 @@ export interface Ticket {
   resolved_at: Date | null;
   resolution_remarks: string | null;
   reopen_reason: string | null;
+  primary_resolution_remarks: string | null;
+  creator_role?: UserRole;
+  creator_name?: string;
+  creator_email?: string;
+  assignee_name?: string;
 }
 
 export interface TicketActivity {

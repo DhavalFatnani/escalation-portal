@@ -117,11 +117,11 @@ export default function UsersManagementPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-2 flex items-center">
-            <Shield className="w-7 h-7 mr-2 text-purple-600" />
+          <h1 className="text-2xl font-bold mb-1 flex items-center">
+            <Shield className="w-5 h-5 mr-2 text-purple-600" />
             <span className="text-gradient">User Management</span>
           </h1>
-          <p className="text-base text-gray-600">Create and manage user accounts</p>
+          <p className="text-sm text-gray-600">Create and manage user accounts</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -145,7 +145,7 @@ export default function UsersManagementPage() {
                     <Shield className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Admin Team</h2>
+                    <h2 className="text-lg font-bold text-gray-900">Admin Team</h2>
                     <p className="text-sm text-gray-600">{adminUsers.length} member{adminUsers.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export default function UsersManagementPage() {
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Growth Team</h2>
+                    <h2 className="text-lg font-bold text-gray-900">Growth Team</h2>
                     <p className="text-sm text-gray-600">{growthUsers.length} member{growthUsers.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
@@ -195,7 +195,7 @@ export default function UsersManagementPage() {
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Operations Team</h2>
+                    <h2 className="text-lg font-bold text-gray-900">Operations Team</h2>
                     <p className="text-sm text-gray-600">{opsUsers.length} member{opsUsers.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>

@@ -19,9 +19,19 @@ export class TicketService {
     try {
       await client.query('BEGIN');
 
-      // Generate ticket number
+      // Get user role to determine ticket prefix
+      const userResult = await client.query(
+        'SELECT role FROM users WHERE id = $1',
+        [userId]
+      );
+      const userRole = userResult.rows[0]?.role;
+
+      // Generate ticket number based on creator's role
+      // GROW prefix for Growth team tickets, OPS prefix for Ops team tickets
+      const prefix = userRole === 'growth' ? 'GROW' : 'OPS';
       const ticketNumberResult = await client.query(
-        "SELECT generate_ticket_number('GROW') as ticket_number"
+        `SELECT generate_ticket_number($1) as ticket_number`,
+        [prefix]
       );
       const ticketNumber = ticketNumberResult.rows[0].ticket_number;
 
@@ -47,12 +57,12 @@ export class TicketService {
       // Log activity
       await client.query(
         `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
-         VALUES ($1, $2, 'created', 'Ticket created', now())`,
-        [ticket.id, userId]
+         VALUES ($1, $2, 'created', $3, now())`,
+        [ticket.id, userId, `Ticket created by ${userRole} team`]
       );
 
       await client.query('COMMIT');
-      logger.info(`Ticket created: ${ticketNumber} by user ${userId}`);
+      logger.info(`Ticket created: ${ticketNumber} by ${userRole} user ${userId}`);
       
       return ticket;
     } catch (error) {
@@ -69,12 +79,18 @@ export class TicketService {
     const params: any[] = [];
     let paramCount = 0;
 
-    // Role-based filtering
-    // Growth users see all tickets created by ANY growth team member (team-based access)
-    if (userRole === 'growth') {
-      whereClause += ` AND t.created_by IN (SELECT id FROM users WHERE role = 'growth')`;
+    // Role-based filtering for bidirectional workflow:
+    // Growth users see:
+    //   - Tickets created by Growth team (their escalations to Ops)
+    //   - Tickets created by Ops team (Ops escalations to them)
+    // Ops users see:
+    //   - Tickets created by Ops team (their escalations to Growth)
+    //   - Tickets created by Growth team (Growth escalations to them)
+    // Admin sees all tickets
+    if (userRole === 'growth' || userRole === 'ops') {
+      // See all tickets - both teams can see all tickets in this bidirectional system
+      // No filtering needed as both teams need visibility of all escalations
     }
-    // Ops and Admin see all tickets (no additional filter needed)
 
     if (filters.status && filters.status.length > 0) {
       whereClause += ` AND t.status = ANY($${++paramCount})`;
@@ -131,6 +147,7 @@ export class TicketService {
       `SELECT t.*, 
         u.name as creator_name, 
         u.email as creator_email,
+        u.role as creator_role,
         a.name as assignee_name
        FROM tickets t
        LEFT JOIN users u ON t.created_by = u.id
@@ -159,6 +176,7 @@ export class TicketService {
       `SELECT t.*, 
         u.name as creator_name, 
         u.email as creator_email,
+        u.role as creator_role,
         a.name as assignee_name
        FROM tickets t
        LEFT JOIN users u ON t.created_by = u.id
@@ -256,17 +274,38 @@ export class TicketService {
         throw new AppError('Can only resolve tickets with status "open" or "re-opened"', 400);
       }
 
-      const result = await client.query(
-        `UPDATE tickets 
-         SET status = 'processed', 
-             resolution_remarks = $1, 
-             current_assignee = $2,
-             last_status_change_at = now(),
-             updated_at = now()
-         WHERE ticket_number = $3
-         RETURNING *`,
-        [data.remarks, userId, ticketNumber]
-      );
+      // Determine if this is the first resolution or an updated resolution after reopen
+      const isFirstResolution = ticket.status === 'open';
+      
+      let result;
+      if (isFirstResolution) {
+        // First resolution: set both primary_resolution_remarks and resolution_remarks
+        result = await client.query(
+          `UPDATE tickets 
+           SET status = 'processed', 
+               primary_resolution_remarks = $1,
+               resolution_remarks = $1, 
+               current_assignee = $2,
+               last_status_change_at = now(),
+               updated_at = now()
+           WHERE ticket_number = $3
+           RETURNING *`,
+          [data.remarks, userId, ticketNumber]
+        );
+      } else {
+        // Updated resolution after reopen: only update resolution_remarks, keep primary_resolution_remarks
+        result = await client.query(
+          `UPDATE tickets 
+           SET status = 'processed', 
+               resolution_remarks = $1, 
+               current_assignee = $2,
+               last_status_change_at = now(),
+               updated_at = now()
+           WHERE ticket_number = $3
+           RETURNING *`,
+          [data.remarks, userId, ticketNumber]
+        );
+      }
 
       await client.query(
         `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, payload, created_at)
@@ -275,7 +314,7 @@ export class TicketService {
       );
 
       await client.query('COMMIT');
-      logger.info(`Ticket resolved: ${ticketNumber} by user ${userId}`);
+      logger.info(`Ticket ${isFirstResolution ? 'resolved' : 'updated resolution'}: ${ticketNumber} by user ${userId}`);
       
       // TODO: Send notification to ticket creator
       

@@ -19,13 +19,14 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
-  /* Modern color palette */
-  --color-primary: #6366f1;
-  --color-primary-dark: #4f46e5;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
-  --color-info: #3b82f6;
+  /* Clean color palette */
+  --color-primary: #4f46e5;
+  --color-primary-light: #6366f1;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+  --color-neutral: #6b7280;
 }
 
 * {
@@ -36,7 +37,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(to bottom right, #f8fafc 0%, #e0e7ff 100%);
   background-attachment: fixed;
 }
 
@@ -114,12 +115,13 @@ body {
   animation: scaleIn 0.3s ease-out;
 }
 
-/* Glassmorphism */
+/* Appealing glass effect */
 .glass {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .glass-dark {
@@ -129,36 +131,26 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Modern shadows - moved to @layer utilities below */
-
-/* Gradient backgrounds */
-.gradient-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Appealing accent colors with gradients */
+.accent-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
 }
 
-.gradient-success {
+.accent-success {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
-.gradient-warning {
+.accent-warning {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
-.gradient-error {
+.accent-error {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-.gradient-blue {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-/* Smooth transitions */
+/* Clean transitions */
 .transition-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.transition-bounce {
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.2s ease;
 }
 
 /* Modern buttons and cards - moved to @layer utilities below */
@@ -200,13 +192,13 @@ body {
     display: none;
   }
   
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600;
-  }
-  
-  .border-gradient {
-    border-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%) 1;
-  }
+      .text-primary {
+        @apply text-indigo-600;
+      }
+      
+      .text-gradient {
+        @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600;
+      }
   
   /* Modern shadows */
   .shadow-soft {
@@ -225,25 +217,25 @@ body {
     box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15), 0 8px 16px rgba(99, 102, 241, 0.1);
   }
   
-  /* Modern buttons */
-  .btn-modern {
-    @apply px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95;
-  }
+      /* Appealing buttons */
+      .btn-modern {
+        @apply px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm;
+      }
 
-  .btn-primary {
-    @apply px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700;
-  }
+      .btn-primary {
+        @apply px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white hover:from-indigo-700 hover:to-indigo-600 shadow-md hover:shadow-lg;
+      }
 
-  .btn-secondary {
-    @apply px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 active:scale-95 bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300;
-  }
+      .btn-secondary {
+        @apply px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 shadow-sm;
+      }
 
-  /* Modern cards */
-  .card-modern {
-    @apply bg-white rounded-2xl p-6 transition-all duration-300;
-  }
+      /* Appealing cards */
+      .card-modern {
+        @apply bg-white rounded-xl border border-gray-200 p-6 transition-all duration-200 shadow-sm;
+      }
 
-  .card-interactive {
-    @apply bg-white rounded-2xl p-6 transition-all duration-300 transform hover:-translate-y-1 cursor-pointer;
-  }
+      .card-interactive {
+        @apply bg-white rounded-xl border border-gray-200 p-6 transition-all duration-200 hover:border-indigo-300 hover:shadow-md cursor-pointer;
+      }
 }

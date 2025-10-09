@@ -4,11 +4,14 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ticketService } from '../services/ticketService';
 import { Search, Filter, Ticket as TicketIcon, ArrowRight, X, Sparkles } from 'lucide-react';
 import { TicketStatus, TicketPriority } from '../types';
+import { useAuthStore } from '../stores/authStore';
 
 export default function TicketsListPage() {
+  const { user } = useAuthStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [includeResolved, setIncludeResolved] = useState(searchParams.get('includeResolved') === 'true');
+  const [teamFilter, setTeamFilter] = useState<'all' | 'created' | 'assigned'>('all');
   
   const statusFilter = searchParams.get('status')?.split(',') as TicketStatus[] | undefined;
   const priorityFilter = searchParams.get('priority')?.split(',') as TicketPriority[] | undefined;
@@ -35,6 +38,20 @@ export default function TicketsListPage() {
       search,
     }),
   });
+
+  // Filter tickets based on team filter
+  const filteredTickets = data?.tickets?.filter(ticket => {
+    if (teamFilter === 'all') return true;
+    if (teamFilter === 'created') {
+      // Show tickets created by my team
+      return ticket.creator_role === user?.role;
+    }
+    if (teamFilter === 'assigned') {
+      // Show tickets assigned to my team (created by the other team)
+      return ticket.creator_role !== user?.role && ticket.creator_role !== 'admin';
+    }
+    return true;
+  }) || [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,11 +116,11 @@ export default function TicketsListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 mb-2 flex items-center">
-            <TicketIcon className="w-7 h-7 mr-2 text-indigo-600" />
+          <h1 className="text-2xl font-bold mb-1 flex items-center">
+            <TicketIcon className="w-5 h-5 mr-2 text-indigo-600" />
             <span className="text-gradient">All Tickets</span>
           </h1>
-          <p className="text-base text-gray-600">View and manage escalation tickets</p>
+          <p className="text-sm text-gray-600">View and manage escalation tickets</p>
         </div>
         {hasFilters && (
           <button
@@ -187,6 +204,48 @@ export default function TicketsListPage() {
           </div>
         </div>
 
+        {/* Team Filter - Only show for Growth/Ops users */}
+        {(user?.role === 'growth' || user?.role === 'ops') && (
+          <div className="mt-6 pt-4 border-t border-gray-200">
+            <p className="text-sm font-bold text-gray-700 mb-3 flex items-center uppercase tracking-wide">
+              <Filter className="w-4 h-4 mr-2 text-indigo-600" />
+              Team View
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setTeamFilter('all')}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  teamFilter === 'all'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                All Tickets
+              </button>
+              <button
+                onClick={() => setTeamFilter('created')}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  teamFilter === 'created'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                My Team Created
+              </button>
+              <button
+                onClick={() => setTeamFilter('assigned')}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
+                  teamFilter === 'assigned'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Assigned to My Team
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Include Resolved Checkbox */}
         <div className="mt-6 pt-4 border-t border-gray-200">
           <label className="flex items-center cursor-pointer group">
@@ -219,7 +278,12 @@ export default function TicketsListPage() {
           <div className="flex items-center">
             <Sparkles className="w-6 h-6 text-indigo-600 mr-2" />
             <h2 className="text-2xl font-bold text-gray-900">
-              {data?.total || 0} {data?.total === 1 ? 'Ticket' : 'Tickets'}
+              {filteredTickets.length} {filteredTickets.length === 1 ? 'Ticket' : 'Tickets'}
+              {teamFilter !== 'all' && data?.total && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (of {data.total} total)
+                </span>
+              )}
             </h2>
           </div>
         </div>
@@ -233,7 +297,7 @@ export default function TicketsListPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {data?.tickets.map((ticket, index) => (
+            {filteredTickets.map((ticket, index) => (
               <Link
                 key={ticket.id}
                 to={`/tickets/${ticket.ticket_number}`}
@@ -282,13 +346,17 @@ export default function TicketsListPage() {
               </Link>
             ))}
 
-            {(!data?.tickets || data.tickets.length === 0) && (
+            {filteredTickets.length === 0 && (
               <div className="py-16 text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
                   <TicketIcon className="w-8 h-8 text-gray-400" />
                 </div>
                 <p className="text-gray-500 font-medium mb-2">No tickets found</p>
-                <p className="text-sm text-gray-400">Try adjusting your filters or search query</p>
+                <p className="text-sm text-gray-400">
+                  {teamFilter !== 'all' 
+                    ? 'No tickets match your team filter. Try selecting "All Tickets"'
+                    : 'Try adjusting your filters or search query'}
+                </p>
               </div>
             )}
           </div>

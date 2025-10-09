@@ -15,7 +15,8 @@ import {
   Zap,
   BarChart3,
   ArrowRight,
-  Settings
+  Settings,
+  Key
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -89,11 +90,11 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center mb-2">
-            <Shield className="w-7 h-7 mr-2 text-purple-600" />
+          <h1 className="text-2xl font-bold flex items-center mb-1">
+            <Shield className="w-5 h-5 mr-2 text-purple-600" />
             <span className="text-gradient">Admin Dashboard</span>
           </h1>
-          <p className="text-base text-gray-600">System overview and management</p>
+          <p className="text-sm text-gray-600">System overview and management</p>
         </div>
         <div className="flex items-center space-x-2">
           <span className="flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-xl font-semibold">

@@ -9,6 +9,7 @@ import TicketDetailPage from './pages/TicketDetailPage';
 import CreateTicketPage from './pages/CreateTicketPage';
 import UsersManagementPage from './pages/UsersManagementPage';
 import SystemSettingsPage from './pages/SystemSettingsPage';
+import DeletionRequestsPage from './pages/DeletionRequestsPage';
 import Layout from './components/Layout';
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
               <Route path="/tickets" element={<TicketsListPage />} />
               <Route path="/tickets/new" element={<CreateTicketPage />} />
               <Route path="/tickets/:ticketNumber" element={<TicketDetailPage />} />
+              <Route path="/deletion-requests" element={<DeletionRequestsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           )

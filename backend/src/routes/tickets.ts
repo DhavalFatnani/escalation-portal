@@ -10,9 +10,14 @@ const router = Router();
 // All routes require authentication
 router.use(requireAuth);
 
-// Create ticket (Growth only)
-router.post('/', requireGrowth, validate(ticketSchemas.create), async (req: AuthRequest, res, next) => {
+// Create ticket (Growth or Ops team)
+router.post('/', validate(ticketSchemas.create), async (req: AuthRequest, res, next) => {
   try {
+    // Only Growth and Ops can create tickets (not admin)
+    if (req.user!.role !== 'growth' && req.user!.role !== 'ops') {
+      return res.status(403).json({ error: 'Only Growth and Ops team members can create tickets' });
+    }
+
     const ticket = await ticketService.createTicket(req.user!.id, req.body);
     res.status(201).json({ ticket });
   } catch (error) {
@@ -52,18 +57,9 @@ router.get('/:ticket_number', async (req: AuthRequest, res, next) => {
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
-    // Check permissions: Growth users can see tickets from ANY growth team member
-    if (req.user!.role === 'growth') {
-      // Check if ticket was created by a growth team member
-      const creatorResult = await query(
-        'SELECT role FROM users WHERE id = $1',
-        [ticket.created_by]
-      );
-      
-      if (creatorResult.rows.length === 0 || creatorResult.rows[0].role !== 'growth') {
-        return res.status(403).json({ error: 'Access denied' });
-      }
-    }
+    // Bidirectional access: Growth and Ops can see all tickets
+    // This allows both teams to view tickets they created and tickets assigned to them
+    // Admin has full access
 
     res.json({ ticket });
   } catch (error) {
@@ -86,42 +82,107 @@ router.patch('/:ticket_number', async (req: AuthRequest, res, next) => {
   }
 });
 
-// Resolve ticket (Ops only)
-router.post('/:ticket_number/resolve', requireOps, validate(ticketSchemas.resolve), async (req: AuthRequest, res, next) => {
+// Resolve ticket (Bidirectional: Ops resolves Growth tickets, Growth resolves Ops tickets)
+router.post('/:ticket_number/resolve', validate(ticketSchemas.resolve), async (req: AuthRequest, res, next) => {
   try {
-    const ticket = await ticketService.resolveTicket(
+    // Get ticket to check who created it
+    const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Get creator's role
+    const creatorResult = await query(
+      'SELECT role FROM users WHERE id = $1',
+      [ticket.created_by]
+    );
+    const creatorRole = creatorResult.rows[0]?.role;
+
+    // Bidirectional resolution:
+    // - If Growth created the ticket, Ops can resolve it
+    // - If Ops created the ticket, Growth can resolve it
+    // - Admin can resolve any ticket
+    if (req.user!.role === 'admin') {
+      // Admin can resolve any ticket
+    } else if (creatorRole === 'growth' && req.user!.role !== 'ops') {
+      return res.status(403).json({ error: 'Only Ops team can resolve Growth tickets' });
+    } else if (creatorRole === 'ops' && req.user!.role !== 'growth') {
+      return res.status(403).json({ error: 'Only Growth team can resolve Ops tickets' });
+    }
+
+    const resolvedTicket = await ticketService.resolveTicket(
       req.params.ticket_number,
       req.body,
       req.user!.id
     );
-    res.json({ ticket });
+    res.json({ ticket: resolvedTicket });
   } catch (error) {
     next(error);
   }
 });
 
-// Reopen ticket (Growth only)
-router.post('/:ticket_number/reopen', requireGrowth, validate(ticketSchemas.reopen), async (req: AuthRequest, res, next) => {
+// Reopen ticket (Bidirectional: Creator can reopen their own tickets)
+router.post('/:ticket_number/reopen', validate(ticketSchemas.reopen), async (req: AuthRequest, res, next) => {
   try {
-    const ticket = await ticketService.reopenTicket(
+    // Get ticket to check who created it
+    const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Get creator's role
+    const creatorResult = await query(
+      'SELECT role FROM users WHERE id = $1',
+      [ticket.created_by]
+    );
+    const creatorRole = creatorResult.rows[0]?.role;
+
+    // Only the creator's team (or admin) can reopen tickets
+    if (req.user!.role === 'admin') {
+      // Admin can reopen any ticket
+    } else if (req.user!.role !== creatorRole) {
+      return res.status(403).json({ error: 'Only the ticket creator team can reopen tickets' });
+    }
+
+    const reopenedTicket = await ticketService.reopenTicket(
       req.params.ticket_number,
       req.body,
       req.user!.id
     );
-    res.json({ ticket });
+    res.json({ ticket: reopenedTicket });
   } catch (error) {
     next(error);
   }
 });
 
-// Close ticket (mark as resolved)
-router.post('/:ticket_number/close', requireGrowth, async (req: AuthRequest, res, next) => {
+// Close ticket (mark as resolved) - Creator team can close
+router.post('/:ticket_number/close', async (req: AuthRequest, res, next) => {
   try {
-    const ticket = await ticketService.closeTicket(
+    // Get ticket to check who created it
+    const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Get creator's role
+    const creatorResult = await query(
+      'SELECT role FROM users WHERE id = $1',
+      [ticket.created_by]
+    );
+    const creatorRole = creatorResult.rows[0]?.role;
+
+    // Only the creator's team (or admin) can close tickets
+    if (req.user!.role === 'admin') {
+      // Admin can close any ticket
+    } else if (req.user!.role !== creatorRole) {
+      return res.status(403).json({ error: 'Only the ticket creator team can close tickets' });
+    }
+
+    const closedTicket = await ticketService.closeTicket(
       req.params.ticket_number,
       req.user!.id
     );
-    res.json({ ticket });
+    res.json({ ticket: closedTicket });
   } catch (error) {
     next(error);
   }
