@@ -5,8 +5,6 @@ import { User, UserRole } from '../types';
 
 export interface AuthRequest extends Request {
   user?: User;
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
-  file?: Express.Multer.File;
 }
 
 export const requireAuth = async (

@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
-import multer, { FileFilterCallback } from 'multer';
+import multer from 'multer';
 import path from 'path';
-import { Request } from 'express';
 
 // Initialize Supabase client (extract from DATABASE_URL)
 const getDatabaseUrl = () => {
@@ -30,7 +29,7 @@ export const upload = multer({
   limits: {
     fileSize: 20 * 1024 * 1024, // 20MB
   },
-  fileFilter: (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  fileFilter: (req, file, cb) => {
     // Allow images, PDFs, office documents, and zip files
     const allowedTypes = [
       'image/jpeg',

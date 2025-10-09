@@ -98,16 +98,28 @@ router.post('/:ticket_number/resolve', validate(ticketSchemas.resolve), async (r
     );
     const creatorRole = creatorResult.rows[0]?.role;
 
+    console.log('Resolve Permission Check:', {
+      ticketNumber: req.params.ticket_number,
+      currentUserRole: req.user!.role,
+      creatorRole: creatorRole,
+      ticketCreatedBy: ticket.created_by
+    });
+
     // Bidirectional resolution:
     // - If Growth created the ticket, Ops can resolve it
     // - If Ops created the ticket, Growth can resolve it
     // - Admin can resolve any ticket
     if (req.user!.role === 'admin') {
       // Admin can resolve any ticket
+      console.log('✅ Admin can resolve any ticket');
     } else if (creatorRole === 'growth' && req.user!.role !== 'ops') {
+      console.log('❌ Denying: Growth ticket, but user is not Ops');
       return res.status(403).json({ error: 'Only Ops team can resolve Growth tickets' });
     } else if (creatorRole === 'ops' && req.user!.role !== 'growth') {
+      console.log('❌ Denying: Ops ticket, but user is not Growth');
       return res.status(403).json({ error: 'Only Growth team can resolve Ops tickets' });
+    } else {
+      console.log('✅ Permission granted');
     }
 
     const resolvedTicket = await ticketService.resolveTicket(

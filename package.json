@@ -11,8 +11,7 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm run dev --workspace=backend",
     "dev:frontend": "npm run dev --workspace=frontend",
-    "build": "npm run build --workspace=backend",
-    "build:all": "npm run build --workspaces",
+    "build": "npm run build --workspaces",
     "test": "npm run test --workspaces"
   },
   "devDependencies": {
