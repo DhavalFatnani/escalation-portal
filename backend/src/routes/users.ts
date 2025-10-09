@@ -13,7 +13,7 @@ router.use(requireAuth);
 router.get('/me', async (req: AuthRequest, res, next) => {
   try {
     const result = await query(
-      'SELECT id, email, name, role, created_at, last_login_at, must_change_password FROM users WHERE id = $1',
+      'SELECT id, email, name, role, created_at, last_login_at, must_change_password, profile_picture FROM users WHERE id = $1',
       [req.user!.id]
     );
 
@@ -216,6 +216,68 @@ router.post('/change-password', async (req: AuthRequest, res, next) => {
 
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
+    next(error);
+  }
+});
+
+// Update profile picture
+router.patch('/profile/picture', async (req: AuthRequest, res, next) => {
+  try {
+    const { profile_picture } = req.body;
+
+    if (!profile_picture) {
+      return res.status(400).json({ error: 'Profile picture data is required' });
+    }
+
+    // Validate base64 image format
+    if (!profile_picture.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid image format. Must be a base64 encoded image.' });
+    }
+
+    // Limit size to 2MB (base64 encoded)
+    if (profile_picture.length > 2 * 1024 * 1024 * 1.37) { // 1.37 is base64 overhead
+      return res.status(400).json({ error: 'Image too large. Maximum size is 2MB.' });
+    }
+
+    const result = await query(
+      'UPDATE users SET profile_picture = $1 WHERE id = $2 RETURNING id, email, name, role, profile_picture',
+      [profile_picture, req.user!.id]
+    );
+
+    logger.info(`Profile picture updated for user: ${req.user!.email}`);
+    res.json({ user: result.rows[0], message: 'Profile picture updated successfully' });
+  } catch (error) {
+    logger.error('Error updating profile picture:', error);
+    next(error);
+  }
+});
+
+// Update user name
+router.patch('/profile/name', async (req: AuthRequest, res, next) => {
+  try {
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+
+    if (name.trim().length < 2) {
+      return res.status(400).json({ error: 'Name must be at least 2 characters long' });
+    }
+
+    if (name.trim().length > 100) {
+      return res.status(400).json({ error: 'Name must be less than 100 characters' });
+    }
+
+    const result = await query(
+      'UPDATE users SET name = $1 WHERE id = $2 RETURNING id, email, name, role, profile_picture',
+      [name.trim(), req.user!.id]
+    );
+
+    logger.info(`Name updated for user: ${req.user!.email} to ${name.trim()}`);
+    res.json({ user: result.rows[0], message: 'Name updated successfully' });
+  } catch (error) {
+    logger.error('Error updating name:', error);
     next(error);
   }
 });

@@ -46,6 +46,17 @@ export default function Layout() {
               </h1>
             </Link>
 
+            {/* Mobile New Ticket Button */}
+            {(user?.role === 'growth' || user?.role === 'ops') && (
+              <Link
+                to="/tickets/new"
+                className="md:hidden flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+                title="New Ticket"
+              >
+                <Plus className="w-5 h-5" />
+              </Link>
+            )}
+
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-2">
               <Link
@@ -133,10 +144,14 @@ export default function Layout() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100/80 transition-all"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
-                  <span className="text-base font-semibold text-white">
-                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
-                  </span>
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center shadow-sm overflow-hidden">
+                  {user?.profile_picture ? (
+                    <img src={user.profile_picture} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-base font-semibold text-white">
+                      {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <div className="text-left hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">{user?.name || user?.email}</p>

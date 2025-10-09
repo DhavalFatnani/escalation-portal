@@ -7,6 +7,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
+  setUser: (user: User) => void;
 }
 
 // Simple localStorage persistence
@@ -43,6 +44,13 @@ export const useAuthStore = create<AuthState>((set) => {
       const newState = { user: null, token: null, isAuthenticated: false };
       set(newState);
       setStoredAuth(newState);
+    },
+    setUser: (user) => {
+      set((state) => {
+        const newState = { ...state, user };
+        setStoredAuth(newState);
+        return { user };
+      });
     },
   };
 });

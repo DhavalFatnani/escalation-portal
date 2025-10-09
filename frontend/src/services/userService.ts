@@ -19,4 +19,14 @@ export const userService = {
     const response = await api.post('/users/change-password', data);
     return response.data;
   },
+
+  async updateProfilePicture(profilePicture: string): Promise<{ user: any; message: string }> {
+    const response = await api.patch('/users/profile/picture', { profile_picture: profilePicture });
+    return response.data;
+  },
+
+  async updateName(name: string): Promise<{ user: any; message: string }> {
+    const response = await api.patch('/users/profile/name', { name });
+    return response.data;
+  },
 };

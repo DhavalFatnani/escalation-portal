@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Shield, Calendar, Key, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { userService } from '../services/userService';
+import { User, Mail, Shield, Calendar, Key, ArrowLeft, CheckCircle, Camera, Edit2, Save, X } from 'lucide-react';
 
 export default function UserProfilePage() {
-  const { user } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState(user?.name || '');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
     return (
@@ -15,6 +22,78 @@ export default function UserProfilePage() {
       </div>
     );
   }
+
+  // Mutations
+  const uploadPictureMutation = useMutation({
+    mutationFn: userService.updateProfilePicture,
+    onSuccess: (data) => {
+      setUser(data.user);
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      setUploadingImage(false);
+      alert('✅ Profile picture updated successfully!');
+    },
+    onError: (error: any) => {
+      setUploadingImage(false);
+      alert(`❌ ${error.response?.data?.error || 'Failed to upload profile picture'}`);
+    },
+  });
+
+  const updateNameMutation = useMutation({
+    mutationFn: userService.updateName,
+    onSuccess: (data) => {
+      setUser(data.user);
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      setIsEditingName(false);
+      alert('✅ Name updated successfully!');
+    },
+    onError: (error: any) => {
+      alert(`❌ ${error.response?.data?.error || 'Failed to update name'}`);
+    },
+  });
+
+  // Handlers
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('❌ Please select an image file');
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      alert('❌ Image size must be less than 2MB');
+      return;
+    }
+
+    setUploadingImage(true);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      uploadPictureMutation.mutate(base64String);
+    };
+    reader.onerror = () => {
+      setUploadingImage(false);
+      alert('❌ Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveName = () => {
+    if (!editedName.trim()) {
+      alert('❌ Name cannot be empty');
+      return;
+    }
+    updateNameMutation.mutate(editedName.trim());
+  };
+
+  const handleCancelEdit = () => {
+    setEditedName(user?.name || '');
+    setIsEditingName(false);
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -44,11 +123,41 @@ export default function UserProfilePage() {
       <div className="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-xl p-8 mb-6 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            {/* Profile Avatar */}
-            <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border-4 border-white/30">
-              <span className="text-5xl font-bold text-white">
-                {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-              </span>
+            {/* Profile Avatar with Upload */}
+            <div className="relative group">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg border-4 border-white/30 overflow-hidden">
+                {user.profile_picture ? (
+                  <img 
+                    src={user.profile_picture} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl font-bold text-white">
+                    {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              {/* Upload Button Overlay */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="absolute inset-0 w-24 h-24 rounded-2xl bg-black/50 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
+                title="Change profile picture"
+              >
+                {uploadingImage ? (
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                ) : (
+                  <Camera className="w-8 h-8 text-white" />
+                )}
+              </button>
             </div>
 
             {/* User Info */}
@@ -103,7 +212,7 @@ export default function UserProfilePage() {
           </h2>
 
           <div className="space-y-6">
-            {/* Name */}
+            {/* Name - Editable */}
             <div className="flex items-start p-4 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
@@ -112,7 +221,45 @@ export default function UserProfilePage() {
               </div>
               <div className="ml-4 flex-1">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Full Name</p>
-                <p className="text-base font-semibold text-gray-900">{user.name || 'Not set'}</p>
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editedName}
+                      onChange={(e) => setEditedName(e.target.value)}
+                      className="flex-1 px-3 py-1.5 border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900"
+                      placeholder="Enter your name"
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveName}
+                      disabled={updateNameMutation.isPending}
+                      className="p-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                      title="Save"
+                    >
+                      <Save className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      disabled={updateNameMutation.isPending}
+                      className="p-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50"
+                      title="Cancel"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="text-base font-semibold text-gray-900 flex-1">{user.name || 'Not set'}</p>
+                    <button
+                      onClick={() => setIsEditingName(true)}
+                      className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                      title="Edit name"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
