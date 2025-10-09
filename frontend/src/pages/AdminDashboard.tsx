@@ -6,7 +6,6 @@ import {
   Users, 
   Ticket, 
   AlertCircle, 
-  CheckCircle, 
   Clock, 
   TrendingUp,
   Activity,
@@ -15,8 +14,7 @@ import {
   Zap,
   BarChart3,
   ArrowRight,
-  Settings,
-  Key
+  Settings
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

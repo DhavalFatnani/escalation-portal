@@ -10,8 +10,7 @@ import {
   Bell,
   Lock,
   Key,
-  Check,
-  X
+  Check
 } from 'lucide-react';
 
 export default function SystemSettingsPage() {

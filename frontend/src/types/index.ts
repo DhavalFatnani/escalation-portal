@@ -34,6 +34,7 @@ export interface Ticket {
   current_assignee: string | null;
   resolved_at: string | null;
   resolution_remarks: string | null;
+  primary_resolution_remarks: string | null;
   reopen_reason: string | null;
   creator_name?: string;
   creator_email?: string;

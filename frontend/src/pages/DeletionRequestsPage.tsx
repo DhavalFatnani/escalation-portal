@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { attachmentService } from '../services/attachmentService';
-import { useAuthStore } from '../stores/authStore';
 import { FileX, Clock, CheckCircle, XCircle, Copy, FileText, AlertTriangle } from 'lucide-react';
 
 export default function DeletionRequestsPage() {
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [generatedOTP, setGeneratedOTP] = useState<string | null>(null);

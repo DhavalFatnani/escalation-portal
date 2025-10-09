@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { Link } from 'react-router-dom';
-import { Ticket, AlertCircle, Clock, CheckCircle, Plus, TrendingUp, ArrowRight } from 'lucide-react';
+import { Ticket, AlertCircle, Clock, Plus, TrendingUp, ArrowRight } from 'lucide-react';
 import { TicketStatus } from '../types';
 import { useAuthStore } from '../stores/authStore';
 

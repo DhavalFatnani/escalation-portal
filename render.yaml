@@ -1,0 +1,30 @@
+# Render Blueprint for Escalation Portal
+# This file enables one-click deployment on Render
+
+services:
+  # Backend API Service
+  - type: web
+    name: escalation-portal-api
+    runtime: node
+    region: oregon # Change to your preferred region
+    plan: free
+    branch: main
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false # Set manually in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true # Auto-generate secure secret
+      - key: FRONTEND_URL
+        sync: false # Add after Vercel deployment
+
+# Note: Database is managed separately on Supabase (free tier)
+# You'll need to add DATABASE_URL manually in Render dashboard
+
