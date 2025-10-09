@@ -120,21 +120,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs font-medium text-gray-700 mb-3">Demo Credentials:</p>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
-                <span className="font-medium text-gray-700">Admin:</span> <span className="text-gray-600">admin@example.com / admin123</span>
-              </div>
-              <div className="p-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
-                <span className="font-medium text-gray-700">Growth:</span> <span className="text-gray-600">growth@example.com / growth123</span>
-              </div>
-              <div className="p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                <span className="font-medium text-gray-700">Ops:</span> <span className="text-gray-600">ops@example.com / ops123</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
