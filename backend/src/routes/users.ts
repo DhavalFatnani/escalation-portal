@@ -102,19 +102,61 @@ router.delete('/:userId', requireRole('admin'), async (req: AuthRequest, res, ne
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
+    // Check if user exists
+    const userCheck = await query(
+      'SELECT email, name FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userEmail = userCheck.rows[0].email;
+
+    // Check for dependencies
+    const ticketsCreated = await query(
+      'SELECT COUNT(*) as count FROM tickets WHERE created_by = $1',
+      [userId]
+    );
+
+    const ticketsAssigned = await query(
+      'SELECT COUNT(*) as count FROM tickets WHERE current_assignee = $1',
+      [userId]
+    );
+
+    const attachmentsUploaded = await query(
+      'SELECT COUNT(*) as count FROM attachments WHERE uploaded_by = $1',
+      [userId]
+    );
+
+    const hasTickets = parseInt(ticketsCreated.rows[0].count) > 0;
+    const hasAssignments = parseInt(ticketsAssigned.rows[0].count) > 0;
+    const hasAttachments = parseInt(attachmentsUploaded.rows[0].count) > 0;
+
+    if (hasTickets || hasAssignments || hasAttachments) {
+      const dependencies = [];
+      if (hasTickets) dependencies.push(`${ticketsCreated.rows[0].count} ticket(s) created`);
+      if (hasAssignments) dependencies.push(`${ticketsAssigned.rows[0].count} ticket(s) assigned`);
+      if (hasAttachments) dependencies.push(`${attachmentsUploaded.rows[0].count} attachment(s)`);
+
+      return res.status(400).json({ 
+        error: 'Cannot delete user with existing data',
+        details: `User has: ${dependencies.join(', ')}. Please reassign or remove these items first.`
+      });
+    }
+
+    // Safe to delete - user has no dependencies
     const result = await query(
       'DELETE FROM users WHERE id = $1 RETURNING email',
       [userId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    logger.info(`User deleted by admin ${req.user!.email}: ${result.rows[0].email}`);
+    logger.info(`User deleted by admin ${req.user!.email}: ${userEmail}`);
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
+    logger.error('Error deleting user:', error);
     next(error);
   }
 });
