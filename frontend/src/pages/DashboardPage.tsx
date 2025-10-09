@@ -89,7 +89,7 @@ export default function DashboardPage() {
           </p>
         </div>
         
-        {user?.role === 'growth' && (
+        {(user?.role === 'growth' || user?.role === 'ops') && (
           <Link
             to="/tickets/new"
             className="btn-primary"
