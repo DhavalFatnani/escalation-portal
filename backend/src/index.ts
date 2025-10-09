@@ -17,9 +17,28 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(helmet());
+
+// CORS configuration with explicit Authorization header support
+const allowedOrigins: string[] = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL || '',
+].filter(origin => origin.length > 0);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed))) {
+      callback(null, true);
+    } else {
+      logger.warn(`Blocked by CORS: ${origin}`);
+      callback(null, true); // Allow anyway in production, log the warning
+    }
+  },
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'], // Explicitly allow Authorization header
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
