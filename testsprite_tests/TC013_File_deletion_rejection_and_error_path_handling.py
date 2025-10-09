@@ -45,15 +45,15 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Input Ops user email and password, then click Sign in button to login as Ops user
+        # Input email and password for growth user and sign in
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ops@example.com')
+        await page.wait_for_timeout(3000); await elem.fill('growth@example.com')
         
 
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ops123')
+        await page.wait_for_timeout(3000); await elem.fill('growth123')
         
 
         frame = context.pages[-1]

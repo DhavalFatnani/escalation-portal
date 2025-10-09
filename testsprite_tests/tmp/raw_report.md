@@ -15,37 +15,44 @@
 #### Test TC001
 - **Test Name:** Successful login with valid credentials
 - **Test Code:** [TC001_Successful_login_with_valid_credentials.py](./TC001_Successful_login_with_valid_credentials.py)
-- **Test Error:** Login attempt with valid credentials failed as the login form resets without any indication of success or error. No JWT token was received. Reporting this issue and stopping further testing as the login functionality cannot be verified in current state.
+- **Test Error:** Login functionality is broken for Growth user credentials. The login form does not submit or proceed after entering valid credentials and clicking Sign in or pressing Enter. No JWT token or role claims are returned, and the user is not redirected to the dashboard. Stopping further testing.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/440694a5-1bcd-4f7f-8b39-91bf72258ec7
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/5903c4a4-0dca-42b7-b169-c8a5119e8288
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC002
-- **Test Name:** Login fails with invalid credentials
-- **Test Code:** [TC002_Login_fails_with_invalid_credentials.py](./TC002_Login_fails_with_invalid_credentials.py)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/5e3b16eb-ed1b-4ac0-a4da-33712dbb8dea
-- **Status:** ✅ Passed
+- **Test Name:** Login failure with invalid credentials
+- **Test Code:** [TC002_Login_failure_with_invalid_credentials.py](./TC002_Login_failure_with_invalid_credentials.py)
+- **Test Error:** Login attempt with invalid credentials failed as expected, but no error message was shown to indicate invalid credentials. This is a website issue preventing full verification of the requirement. Stopping further testing.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/d10810d8-bfcf-4bbc-88ed-2d506bc8b6fa
+- **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC003
 - **Test Name:** Role-based access control enforcement for Growth user
 - **Test Code:** [TC003_Role_based_access_control_enforcement_for_Growth_user.py](./TC003_Role_based_access_control_enforcement_for_Growth_user.py)
-- **Test Error:** Login for Growth user failed repeatedly with provided credentials. Cannot proceed with permission verification tests. Reporting issue and stopping further actions.
+- **Test Error:** Unable to proceed with the task as the Growth user login failed repeatedly with the provided credentials. The issue has been reported. Stopping all further testing as instructed.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/d68f5af5-0062-42b0-9a12-5bc0d5bf0224
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/3173c179-084c-4162-be4f-953644dd3b57
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
@@ -53,197 +60,352 @@ Browser Console Logs:
 #### Test TC004
 - **Test Name:** Role-based access control enforcement for Ops user
 - **Test Code:** [TC004_Role_based_access_control_enforcement_for_Ops_user.py](./TC004_Role_based_access_control_enforcement_for_Ops_user.py)
-- **Test Error:** Testing stopped due to inability to log in as Ops user. Login attempts with correct credentials fail, blocking all subsequent test steps. Please investigate and fix the login issue.
+- **Test Error:** Unable to proceed with the task because the Ops user login failed repeatedly with the provided credentials. The issue has been reported. No further testing could be performed to verify Ops role access restrictions.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/b05fec25-dbd5-45f9-afb0-5d504911c368
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/b9b33e44-2fd6-4899-985f-aa36d87db30c
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC005
-- **Test Name:** Ticket creation with valid mandatory fields by Growth user
-- **Test Code:** [TC005_Ticket_creation_with_valid_mandatory_fields_by_Growth_user.py](./TC005_Ticket_creation_with_valid_mandatory_fields_by_Growth_user.py)
-- **Test Error:** Login failed for Growth user with provided credentials. Cannot proceed with ticket creation test. Reported the issue and stopped further actions.
+- **Test Name:** Bidirectional ticket creation workflow by Growth user
+- **Test Code:** [TC005_Bidirectional_ticket_creation_workflow_by_Growth_user.py](./TC005_Bidirectional_ticket_creation_workflow_by_Growth_user.py)
+- **Test Error:** The Growth user login failed repeatedly despite correct credentials input and clicking Sign in button. No navigation or error message appeared, indicating a blocking issue with the login functionality. This prevents further testing of ticket creation and verification steps. The login issue has been reported. Task stopped.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/b7ebffdb-6c2b-47a2-b4cf-b37b57e43ab3
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/aa83a904-b5b7-4f50-8f64-9bb020f9e392
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC006
-- **Test Name:** Ticket creation rejects invalid or missing fields
-- **Test Code:** [TC006_Ticket_creation_rejects_invalid_or_missing_fields.py](./TC006_Ticket_creation_rejects_invalid_or_missing_fields.py)
-- **Test Error:** Login failure prevents access to ticket creation form. Cannot proceed with input validation tests. Reporting issue and stopping further actions.
+- **Test Name:** Bidirectional ticket creation workflow by Ops user
+- **Test Code:** [TC006_Bidirectional_ticket_creation_workflow_by_Ops_user.py](./TC006_Bidirectional_ticket_creation_workflow_by_Ops_user.py)
+- **Test Error:** The task to verify Ops user can create a new ticket could not be completed because the Ops user login failed repeatedly with no error message or page navigation. The issue has been reported. Stopping further actions.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/51034c69-1450-4c09-ad10-94a768c6ed22
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/e6f032f3-3a79-46ef-a5a1-dad4bf42021e
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC007
-- **Test Name:** Ticket status lifecycle transitions
-- **Test Code:** [TC007_Ticket_status_lifecycle_transitions.py](./TC007_Ticket_status_lifecycle_transitions.py)
-- **Test Error:** Unable to proceed with the task of verifying ticket status transitions due to persistent login failure for Growth user. The login form resets after clicking Sign In and does not navigate away despite using correct credentials. The issue has been reported for resolution. Task stopped.
+- **Test Name:** Ticket creation validation for mandatory fields
+- **Test Code:** [TC007_Ticket_creation_validation_for_mandatory_fields.py](./TC007_Ticket_creation_validation_for_mandatory_fields.py)
+- **Test Error:** Login to the portal failed with all provided demo credentials. Cannot proceed with ticket creation form validation testing. Reporting the issue and stopping further actions.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/752f573c-1d3c-49aa-8f71-2002e22e47a2
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/99e55940-0a64-41f5-ab8d-d143ea13c706
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC008
-- **Test Name:** Ticket list search and filtering with pagination
-- **Test Code:** [TC008_Ticket_list_search_and_filtering_with_pagination.py](./TC008_Ticket_list_search_and_filtering_with_pagination.py)
-- **Test Error:** Login failure prevents proceeding with ticket search and filter tests. Reporting issue and stopping further actions.
+- **Test Name:** File upload enforces count and size limits on initial attachment
+- **Test Code:** [TC008_File_upload_enforces_count_and_size_limits_on_initial_attachment.py](./TC008_File_upload_enforces_count_and_size_limits_on_initial_attachment.py)
+- **Test Error:** Login failed with provided demo credentials, blocking access to New Ticket page and file upload tests. Reporting issue and stopping further actions.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/8ff1966c-5f1c-41e9-aa75-79fe9ddd6377
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/8d859b16-4822-4ace-9dc0-d07ba77fdcec
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC009
-- **Test Name:** Activity timeline accuracy and completeness
-- **Test Code:** [TC009_Activity_timeline_accuracy_and_completeness.py](./TC009_Activity_timeline_accuracy_and_completeness.py)
-- **Test Error:** Login failure prevents proceeding with the ticket activity timeline verification task. Reported the issue and stopped further actions.
+- **Test Name:** Ops user adds resolution remarks and marks ticket processed
+- **Test Code:** [TC009_Ops_user_adds_resolution_remarks_and_marks_ticket_processed.py](./TC009_Ops_user_adds_resolution_remarks_and_marks_ticket_processed.py)
+- **Test Error:** The task to verify Ops user can add resolution remarks, upload resolution files, mark ticket as processed, and update activity log could not be completed due to a login failure for the Ops user. The issue has been reported. No further actions are possible without successful login.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/5af8b52b-2d88-4737-8afe-e93b9621db2a
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/95f9e9e6-682c-4215-bf25-22a4ae81393c
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC010
-- **Test Name:** Form inline validation and error messaging
-- **Test Code:** [TC010_Form_inline_validation_and_error_messaging.py](./TC010_Form_inline_validation_and_error_messaging.py)
-- **Test Error:** Login attempts with provided demo credentials failed repeatedly, blocking access to the ticket creation form. Unable to perform inline validation tests on the UI forms. Reporting the issue and stopping further testing.
+- **Test Name:** Growth user reopens processed ticket with reason and files
+- **Test Code:** [TC010_Growth_user_reopens_processed_ticket_with_reason_and_files.py](./TC010_Growth_user_reopens_processed_ticket_with_reason_and_files.py)
+- **Test Error:** The test to verify that a Growth ticket creator can reopen a processed ticket could not be completed because the Growth user login failed. After entering the correct credentials and clicking Sign in, the page reloads to the login form with cleared fields and no error message. This login issue was reported as a website problem. No further testing could be performed.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/d4c70f19-2190-45bc-a34f-b7225863299b
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/ce2eef8f-9323-40fe-8a49-fd765876de09
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC011
-- **Test Name:** UI responsiveness and accessibility on different device sizes
-- **Test Code:** [TC011_UI_responsiveness_and_accessibility_on_different_device_sizes.py](./TC011_UI_responsiveness_and_accessibility_on_different_device_sizes.py)
-- **Test Error:** The UI rendering and functionality verification task could not be completed due to a login failure issue on the portal. The login page remains after sign-in attempts with the provided credentials, preventing access to the portal UI for testing. The issue has been reported. Please resolve the authentication problem to enable further UI testing.
+- **Test Name:** Growth user accepts and closes processed ticket
+- **Test Code:** [TC011_Growth_user_accepts_and_closes_processed_ticket.py](./TC011_Growth_user_accepts_and_closes_processed_ticket.py)
+- **Test Error:** Login failed for Growth user with correct credentials. Cannot proceed with testing ticket acceptance and closure. Reporting issue and stopping test.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/7037db78-29ec-4d45-982b-79eb82d01089
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE (at http://localhost:5173/api/api/auth/login:0:0)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/9a4ae84a-eb91-4cbe-90ed-9991e8a92710
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC012
-- **Test Name:** Security: Input validation and prevention of SQL injection and XSS
-- **Test Code:** [TC012_Security_Input_validation_and_prevention_of_SQL_injection_and_XSS.py](./TC012_Security_Input_validation_and_prevention_of_SQL_injection_and_XSS.py)
-- **Test Error:** Reported login issue preventing access to backend for security testing. Stopping further actions.
+- **Test Name:** File deletion peer-approval workflow with OTP validation
+- **Test Code:** [TC012_File_deletion_peer_approval_workflow_with_OTP_validation.py](./TC012_File_deletion_peer_approval_workflow_with_OTP_validation.py)
+- **Test Error:** Login attempts for user growth@example.com failed repeatedly despite correct credentials. This blocks the verification of the file deletion workflow. The login issue has been reported. Stopping all further actions and completing the task.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/98c864d2-657c-4283-bb20-cdec436a2eb5
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: net::ERR_EMPTY_RESPONSE (at http://localhost:5173/api/api/auth/login:0:0)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/3f0ca979-04ae-41a1-9313-e65c6fa9ebac
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC013
-- **Test Name:** Security: JWT token expiration and invalid token rejection
-- **Test Code:** [TC013_Security_JWT_token_expiration_and_invalid_token_rejection.py](./TC013_Security_JWT_token_expiration_and_invalid_token_rejection.py)
-- **Test Error:** The login functionality is not working as expected with valid credentials, preventing obtaining a JWT token. This blocks the ability to test expired or tampered JWT tokens. The issue has been reported. Task is now complete.
+- **Test Name:** File deletion rejection and error path handling
+- **Test Code:** [TC013_File_deletion_rejection_and_error_path_handling.py](./TC013_File_deletion_rejection_and_error_path_handling.py)
+- **Test Error:** The task to verify approver can reject file deletion request, requester notified accordingly, and deletion not performed could not be completed due to a login failure with the growth user credentials. The issue was reported as the page did not proceed past the login form after entering correct credentials. Further testing is blocked until the login issue is resolved.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/3fade5dc-d006-4dd8-bc60-8c35f97b22c8
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/aed4bf25-2ddc-4a95-ba2b-d29988cd5dc5
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC014
-- **Test Name:** Rate limiting enforcement to prevent brute force attacks
-- **Test Code:** [TC014_Rate_limiting_enforcement_to_prevent_brute_force_attacks.py](./TC014_Rate_limiting_enforcement_to_prevent_brute_force_attacks.py)
-- **Test Error:** Rate limiting enforcement on login endpoint could not be verified due to lack of visible feedback or error messages after invalid login attempts. Reporting this issue and stopping further testing to avoid false conclusions.
+- **Test Name:** OTP validation failure during file deletion
+- **Test Code:** [TC014_OTP_validation_failure_during_file_deletion.py](./TC014_OTP_validation_failure_during_file_deletion.py)
+- **Test Error:** Login failed repeatedly with valid credentials, blocking further testing of OTP deletion failure scenarios. Reporting issue and stopping as per instructions.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/34a47940-78ba-4f2e-b1b4-69c21913425a
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/5f6b4472-1f3f-4347-9bcf-1d7d296e2e2f
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
 
 #### Test TC015
-- **Test Name:** UI error messaging and loading states
-- **Test Code:** [TC015_UI_error_messaging_and_loading_states.py](./TC015_UI_error_messaging_and_loading_states.py)
-- **Test Error:** Login failure with provided demo credentials prevents access to the application. Unable to proceed with testing loading spinners and error messages during async operations. Recommend investigation and fix of authentication issue before retrying tests.
+- **Test Name:** Advanced ticket search with multiple filters
+- **Test Code:** [TC015_Advanced_ticket_search_with_multiple_filters.py](./TC015_Advanced_ticket_search_with_multiple_filters.py)
+- **Test Error:** The task to verify ticket search and filtering could not be completed due to a login failure with valid Growth user credentials. The login page remains after sign-in attempts with no error message or redirection. The issue has been reported. Stopping further actions.
 Browser Console Logs:
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:3001/api/auth/login:0:0)
-[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=868ace5c:4392:12)
-- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/beb69e17-ad22-4e31-bc97-308a96749285/d0548a1b-ca71-47b3-86ce-4b7a1c3c602f
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/fd87a9eb-ad2b-43b2-a0ee-5da85d4d8722
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC016
+- **Test Name:** Activity timeline chronological order and live update
+- **Test Code:** [TC016_Activity_timeline_chronological_order_and_live_update.py](./TC016_Activity_timeline_chronological_order_and_live_update.py)
+- **Test Error:** Login attempts with provided demo credentials failed repeatedly, preventing access to the ticket detail page. Unable to verify ticket activity timeline as required. Reporting this as a critical issue and stopping further actions.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/8337bc19-b112-414c-9d9c-9c9a8ac8279b
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC017
+- **Test Name:** Admin user manages users and changes passwords
+- **Test Code:** [TC017_Admin_user_manages_users_and_changes_passwords.py](./TC017_Admin_user_manages_users_and_changes_passwords.py)
+- **Test Error:** Login as admin failed with provided credentials, blocking further testing of user management access. Reporting issue and stopping test.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/875c3c6c-822c-4418-94f2-96ab0ab138df
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC018
+- **Test Name:** Input validation and error handling on ticket creation API
+- **Test Code:** [TC018_Input_validation_and_error_handling_on_ticket_creation_API.py](./TC018_Input_validation_and_error_handling_on_ticket_creation_API.py)
+- **Test Error:** Stopped testing due to inability to login with provided demo credentials. Authentication failure prevents proceeding with API validation tests for ticket creation. Reported the issue for resolution.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/a757e4f2-b915-4112-9481-9050b7b69270
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC019
+- **Test Name:** Security test: SQL injection prevention on ticket search
+- **Test Code:** [TC019_Security_test_SQL_injection_prevention_on_ticket_search.py](./TC019_Security_test_SQL_injection_prevention_on_ticket_search.py)
+- **Test Error:** Login failed with provided credentials, preventing access to the search page for SQL injection testing. Reporting the issue and stopping further actions as login is required to proceed.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/cbad277c-67a1-4bb8-a3c7-cb26c9f71b34
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC020
+- **Test Name:** Security test: JWT token expiration enforcement
+- **Test Code:** [TC020_Security_test_JWT_token_expiration_enforcement.py](./TC020_Security_test_JWT_token_expiration_enforcement.py)
+- **Test Error:** Login attempts with all provided demo credentials failed, preventing obtaining JWT token. Cannot proceed with JWT expiration test. Reporting issue and stopping further testing.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/b16e7386-e868-49e7-83ae-d4fe858634c1
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC021
+- **Test Name:** Rate limiting enforcement on authentication endpoints
+- **Test Code:** [TC021_Rate_limiting_enforcement_on_authentication_endpoints.py](./TC021_Rate_limiting_enforcement_on_authentication_endpoints.py)
+- **Test Error:** Tested multiple rapid login attempts with incorrect credentials on the login page. No rate limiting error (429 Too Many Requests) or any error message was observed. The system does not appear to enforce or display rate limiting on excessive login attempts. Stopping further testing as per task instructions.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/98579719-aa12-4628-a931-aada12d9a6ec
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC022
+- **Test Name:** UI responsiveness and performance under load
+- **Test Code:** [TC022_UI_responsiveness_and_performance_under_load.py](./TC022_UI_responsiveness_and_performance_under_load.py)
+- **Test Error:** Login failure prevents access to dashboard and other pages. Cannot proceed with UI performance testing. Reporting issue and stopping further actions.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/1a76a049-831c-447c-9e8f-77ca61eba426
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC023
+- **Test Name:** Verify security headers and CORS configuration
+- **Test Code:** [TC023_Verify_security_headers_and_CORS_configuration.py](./TC023_Verify_security_headers_and_CORS_configuration.py)
+- **Test Error:** Login with growth user credentials failed, preventing further testing of Helmet security headers and CORS policies. Issue reported and testing stopped.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/81bf3d07-fcd7-470f-b6a3-a65a2855e5cf
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC024
+- **Test Name:** File attachments upload context categorization verification
+- **Test Code:** [TC024_File_attachments_upload_context_categorization_verification.py](./TC024_File_attachments_upload_context_categorization_verification.py)
+- **Test Error:** Reported login issue due to inability to access the system with valid demo credentials. Cannot proceed with file upload tagging verification. Task stopped.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/7229d440-6587-4862-a2fc-f1783dde54b1
+- **Status:** ❌ Failed
+- **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
+---
+
+#### Test TC025
+- **Test Name:** Verify unique ticket number generation format
+- **Test Code:** [TC025_Verify_unique_ticket_number_generation_format.py](./TC025_Verify_unique_ticket_number_generation_format.py)
+- **Test Error:** Login functionality is broken or unresponsive. Multiple attempts with valid demo credentials failed to log in. The page remains stuck on the login form with no error messages or navigation. Unable to proceed with ticket creation and ticket number verification tests. Please fix the login issue and retry.
+Browser Console Logs:
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) (at http://localhost:5173/api/api/auth/login:0:0)
+[WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+[WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. (at http://localhost:5173/node_modules/.vite/deps/react-router-dom.js?v=2201e691:4392:12)
+- **Test Visualization and Result:** https://www.testsprite.com/dashboard/mcp/tests/52a0b010-636e-4fbf-8684-948bb7e72f94/56b294fc-0bed-443b-b688-ca7301c6feb3
 - **Status:** ❌ Failed
 - **Analysis / Findings:** {{TODO:AI_ANALYSIS}}.
 ---
@@ -251,7 +413,7 @@ Browser Console Logs:
 
 ## 3️⃣ Coverage & Matching Metrics
 
-- **6.67** of tests passed
+- **0.00** of tests passed
 
 | Requirement        | Total Tests | ✅ Passed | ❌ Failed  |
 |--------------------|-------------|-----------|------------|

@@ -9,10 +9,10 @@
     "projectName": "Escalation Portal",
     "projectPath": "/Users/abcom/Downloads/KNOT/Escalation Portal",
     "testIds": [],
-    "additionalInstruction": "Re-running tests with Supabase backend now working. Test credentials:\n- Growth: growth@example.com / password123\n- Ops: ops@example.com / password123\n- Admin: admin@example.com / password123\n\nBackend is confirmed working at http://localhost:3001\nFrontend is at http://localhost:5173\nDatabase is Supabase (cloud-hosted PostgreSQL)",
+    "additionalInstruction": "",
     "envs": {
       "API_KEY": "sk-user-zEjzHrFU3zZGyGlC0zog2rvP1YqvCDKqoUtvAbRjZ2VH5dA3LqyevZepKMFl8b15EN2CSHCgX40k7Y1qMv_MwrY_KCfmLaRDtlyp2FU7NHSpRlDFu81HQ6j0a4dgrA_t-ns"
     }
   },
-  "proxy": "http://e7e92ffb-29ea-4d95-87c6-864efcba4490:OBsjDOavbkav0SNUTqjBooyopZVDQO5p@tun.testsprite.com:8080"
+  "proxy": "http://6ecfa565-63e1-4bf9-882c-1f66a0b1c49f:TVa4dpnvzfEZoYlvEUfe8B0aoGmlqp4v@tun.testsprite.com:8080"
 }

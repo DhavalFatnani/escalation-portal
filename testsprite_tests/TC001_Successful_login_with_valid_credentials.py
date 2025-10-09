@@ -45,23 +45,24 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Input valid email and password
+        # Input valid email and password for Growth user
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/form/div/input').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('growth@example.com')
         
 
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/form/div[2]/input').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('growth123')
         
 
-        # Click the login button to attempt login
+        # Click login button to submit credentials
         frame = context.pages[-1]
-        elem = frame.locator('xpath=html/body/div/div/div/div/form/button').nth(0)
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # Generic failing assertion since expected result is unknown
         assert False, 'Test failed: Expected result unknown, forcing failure.'
         await asyncio.sleep(5)
     

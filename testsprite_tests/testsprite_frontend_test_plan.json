@@ -2,38 +2,42 @@
   {
     "id": "TC001",
     "title": "Successful login with valid credentials",
-    "description": "Verify that a user can log in successfully with valid email and password and receives a valid JWT token.",
+    "description": "Verify that a user can log in successfully using correct email and password, and receives a valid JWT token with appropriate role claims.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the login page"
+        "description": "Navigate to login page"
       },
       {
         "type": "action",
-        "description": "Input valid email and password"
+        "description": "Input valid email and password for Growth user"
       },
       {
         "type": "action",
-        "description": "Click the login button"
+        "description": "Click login button"
       },
       {
         "type": "assertion",
-        "description": "Verify that login is successful and a JWT token is returned"
+        "description": "Verify login is successful and JWT is returned including role 'Growth'"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is redirected to dashboard"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Login fails with invalid credentials",
-    "description": "Verify that login attempt with invalid credentials is rejected with an appropriate error message and no token is issued.",
+    "title": "Login failure with invalid credentials",
+    "description": "Verify login fails when incorrect email or password is entered and appropriate error message is shown.",
     "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to the login page"
+        "description": "Navigate to login page"
       },
       {
         "type": "action",
@@ -41,241 +45,492 @@
       },
       {
         "type": "action",
-        "description": "Click the login button"
+        "description": "Click login button"
       },
       {
         "type": "assertion",
-        "description": "Verify that login fails with an error message and no JWT token is returned"
+        "description": "Verify login is unsuccessful"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message indicates invalid credentials"
       }
     ]
   },
   {
     "id": "TC003",
     "title": "Role-based access control enforcement for Growth user",
-    "description": "Verify that Growth users have access only to permitted actions such as creating tickets, reopening, closing, and viewing own tickets, and are blocked from unauthorized operations.",
+    "description": "Verify Growth role cannot access Ops-only or Admin-only endpoints and UI elements are restricted appropriately.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Growth user"
+        "description": "Login as Growth user and obtain JWT token"
       },
       {
         "type": "action",
-        "description": "Attempt to create a new ticket"
+        "description": "Attempt to access Admin-only API endpoint"
       },
       {
         "type": "assertion",
-        "description": "Ticket creation is successful"
+        "description": "Verify access is denied with 403 Forbidden"
       },
       {
         "type": "action",
-        "description": "Attempt to reopen an existing processed ticket created by self"
+        "description": "Attempt to access Ops-only API endpoint"
       },
       {
         "type": "assertion",
-        "description": "Reopen ticket action succeeds"
+        "description": "Verify access is denied with 403 Forbidden"
       },
       {
         "type": "action",
-        "description": "Attempt to add resolution or assign tickets"
-      },
-      {
-        "type": "assertion",
-        "description": "Access denied with appropriate error message"
+        "description": "Verify UI does not show Admin or Ops specific features"
       }
     ]
   },
   {
     "id": "TC004",
     "title": "Role-based access control enforcement for Ops user",
-    "description": "Verify that Ops users can view all tickets, add resolutions, assign tickets, and update priority, and cannot create or close tickets.",
+    "description": "Verify Ops role has appropriate access and cannot perform Growth or Admin privileged actions.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Ops user"
+        "description": "Login as Ops user and obtain JWT token"
       },
       {
         "type": "action",
-        "description": "View list of all tickets"
+        "description": "Attempt to create ticket as Ops user"
       },
       {
         "type": "assertion",
-        "description": "All tickets are visible regardless of creator"
+        "description": "Verify ticket is successfully created with prefix OPS in ticket number"
       },
       {
         "type": "action",
-        "description": "Add resolution remarks to an open ticket"
+        "description": "Attempt to access Admin-only API endpoint"
       },
       {
         "type": "assertion",
-        "description": "Ticket status changes to 'processed' and user assigned successfully"
+        "description": "Verify access is denied with 403 Forbidden"
       },
       {
         "type": "action",
-        "description": "Attempt to create a new ticket"
-      },
-      {
-        "type": "assertion",
-        "description": "Access denied with appropriate error"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to close a ticket"
-      },
-      {
-        "type": "assertion",
-        "description": "Access denied with appropriate error"
+        "description": "Verify UI does not show Admin specific features"
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Ticket creation with valid mandatory fields by Growth user",
-    "description": "Verify that a Growth user can create a ticket providing all required fields and the ticket number is generated in format GROW-YYYYMMDD-NNNN with status 'open'.",
+    "title": "Bidirectional ticket creation workflow by Growth user",
+    "description": "Verify Growth user can successfully create a new ticket with mandatory fields, optional initial file uploads, unique ticket number generation, and correct status assignment.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Growth user"
+        "description": "Login as Growth user"
       },
       {
         "type": "action",
-        "description": "Navigate to new ticket creation page"
+        "description": "Navigate to New Ticket page"
       },
       {
         "type": "action",
-        "description": "Fill in brand name, description, issue type, and priority"
+        "description": "Fill ticket form with brand name, description, issue type, priority"
       },
       {
         "type": "action",
-        "description": "Submit the ticket form"
+        "description": "Upload up to 3 initial files within size limits"
+      },
+      {
+        "type": "action",
+        "description": "Submit ticket form"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket is created with status 'open' and ticket_number matches 'GROW-YYYYMMDD-NNNN' format"
+        "description": "Verify ticket is created with unique ticket number starting with GROW- and dated correctly"
       },
       {
         "type": "assertion",
-        "description": "Activity timeline entry is created for ticket creation"
+        "description": "Verify ticket has status 'open' and creator role recorded as Growth"
       },
       {
         "type": "assertion",
-        "description": "User is redirected to ticket detail page"
+        "description": "Verify activity log contains ticket creation entry"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is redirected to ticket detail page"
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "Ticket creation rejects invalid or missing fields",
-    "description": "Verify that ticket creation form enforces input validation and prevents submission with missing or invalid brand name, description, issue type, or priority.",
-    "category": "error handling",
+    "title": "Bidirectional ticket creation workflow by Ops user",
+    "description": "Verify Ops user can create new ticket similarly with correct prefix and status.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as Growth user"
+        "description": "Login as Ops user"
       },
       {
         "type": "action",
-        "description": "Navigate to new ticket creation page"
+        "description": "Navigate to New Ticket page"
       },
       {
         "type": "action",
-        "description": "Attempt to submit form with missing brand name"
+        "description": "Fill ticket form with required fields"
+      },
+      {
+        "type": "action",
+        "description": "Submit form without files"
       },
       {
         "type": "assertion",
-        "description": "Form validation error shown for brand name"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to submit form with invalid issue type not in allowed set"
+        "description": "Verify ticket number starts with OPS- and is unique for date"
       },
       {
         "type": "assertion",
-        "description": "Form validation error shown for issue type"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to submit form with invalid priority"
-      },
-      {
-        "type": "assertion",
-        "description": "Form validation error shown for priority"
+        "description": "Verify ticket status is 'open', and logged correctly"
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Ticket status lifecycle transitions",
-    "description": "Verify correct status transitions: open → processed (after Ops resolution) → resolved (after Growth acceptance) or re-opened (after Growth reopens).",
-    "category": "functional",
+    "title": "Ticket creation validation for mandatory fields",
+    "description": "Verify ticket creation form validation blocks submission if brand name, description, issue type, or priority are missing and shows error messages.",
+    "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Create a new ticket as Growth user (status should be 'open')"
+        "description": "Navigate to New Ticket page"
       },
       {
         "type": "action",
-        "description": "Log in as Ops user and submit resolution for the open ticket"
+        "description": "Attempt ticket creation leaving brand name empty"
       },
       {
         "type": "assertion",
-        "description": "Ticket status updates to 'processed' and Ops user assigned"
+        "description": "Verify submission is blocked and brand name required error is shown"
       },
       {
         "type": "action",
-        "description": "Log in as Growth user and accept and close the processed ticket"
+        "description": "Fill brand name but leave description empty"
       },
       {
         "type": "assertion",
-        "description": "Ticket status updates to 'resolved' and resolution timestamp recorded"
+        "description": "Verify submission blocked with description required error"
       },
       {
         "type": "action",
-        "description": "Reopen the resolved ticket (simulate reopen workflow to test reopening)"
+        "description": "Fill all fields except issue type"
       },
       {
         "type": "assertion",
-        "description": "Ticket status changes to 're-opened' and activity logged"
+        "description": "Verify submission blocked with issue type required error"
+      },
+      {
+        "type": "action",
+        "description": "Fill all fields except priority"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify submission blocked with priority required error"
       }
     ]
   },
   {
     "id": "TC008",
-    "title": "Ticket list search and filtering with pagination",
-    "description": "Verify users can search tickets by ticket number, status, priority, brand name, creator, assignee, and date range, simultaneously applying multiple filters and pagination works correctly.",
+    "title": "File upload enforces count and size limits on initial attachment",
+    "description": "Verify file upload rejects more than 5 files or files larger than 20MB with proper error messages during ticket creation.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to New Ticket page in Growth user context"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to upload 6 files, each under 20MB"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify upload is rejected and error indicates max 5 files allowed"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to upload a file larger than 20MB"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify upload rejected with file size limit error"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Ops user adds resolution remarks and marks ticket processed",
+    "description": "Verify Ops user can add resolution remarks, upload resolution files, mark ticket as processed, and activity log is updated.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in as any user"
+        "description": "Login as Ops user"
       },
+      {
+        "type": "action",
+        "description": "Open an open ticket created by Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Add mandatory resolution remarks"
+      },
+      {
+        "type": "action",
+        "description": "Upload resolution files within limits"
+      },
+      {
+        "type": "action",
+        "description": "Submit resolution"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket status changes to 'processed'"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify resolution remarks saved as primary_resolution_remarks if first resolution"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify activity log records resolution action with details"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Growth user reopens processed ticket with reason and files",
+    "description": "Verify Growth ticket creator can reopen a processed ticket by submitting reopen reason and optional files, and ticket status updates to 're-opened'.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as Growth user who created a processed ticket"
+      },
+      {
+        "type": "action",
+        "description": "Open ticket detail page"
+      },
+      {
+        "type": "action",
+        "description": "Click reopen ticket"
+      },
+      {
+        "type": "action",
+        "description": "Enter mandatory reopen reason"
+      },
+      {
+        "type": "action",
+        "description": "Upload reopen files within limits"
+      },
+      {
+        "type": "action",
+        "description": "Submit reopen request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket status changes to 're-opened'"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reopen reason is saved"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify activity log contains reopen entry with details"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Growth user accepts and closes processed ticket",
+    "description": "Verify Growth ticket creator can accept resolution and close a processed ticket, updating ticket status and logging activity.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as Growth user who created a processed ticket"
+      },
+      {
+        "type": "action",
+        "description": "Access ticket detail page"
+      },
+      {
+        "type": "action",
+        "description": "Choose to accept resolution and close ticket"
+      },
+      {
+        "type": "action",
+        "description": "Confirm close action"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket status changes to 'closed'"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify activity log records closing action"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "File deletion peer-approval workflow with OTP validation",
+    "description": "Verify that a user requesting file deletion submits reason, opposite team approves generating OTP, requester enters OTP, file is deleted upon successful verification, and activity logged.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "User clicks delete on a file attachment"
+      },
+      {
+        "type": "action",
+        "description": "Enter deletion reason and submit deletion request"
+      },
+      {
+        "type": "action",
+        "description": "Opposite team user views pending deletion requests"
+      },
+      {
+        "type": "action",
+        "description": "Approver reviews and approves request, triggering OTP generation"
+      },
+      {
+        "type": "action",
+        "description": "Requester receives OTP and enters it into system"
+      },
+      {
+        "type": "action",
+        "description": "Submit OTP for validation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify OTP is validated successfully"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify file attachment is deleted"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify activity log records file deletion with details"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "File deletion rejection and error path handling",
+    "description": "Verify approver can reject file deletion request, requester notified accordingly, and deletion not performed.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "User submits file deletion request with reason"
+      },
+      {
+        "type": "action",
+        "description": "Opposite team user views and rejects deletion request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify requester receives rejection notification"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify file remains undeleted"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "OTP validation failure during file deletion",
+    "description": "Verify deletion fails if incorrect OTP entered or OTP expired with appropriate error messages.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit file deletion request and receive valid OTP"
+      },
+      {
+        "type": "action",
+        "description": "Enter incorrect OTP and submit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify deletion denied with 'invalid OTP' message"
+      },
+      {
+        "type": "action",
+        "description": "Wait until OTP expiration time passes"
+      },
+      {
+        "type": "action",
+        "description": "Enter expired OTP and submit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify deletion denied with 'OTP expired' message"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Advanced ticket search with multiple filters",
+    "description": "Verify tickets can be searched and filtered by status, priority, brand, creator, assignee, and date range with pagination support.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
       {
         "type": "action",
         "description": "Navigate to ticket list page"
       },
       {
         "type": "action",
-        "description": "Apply search keyword in full-text search field"
+        "description": "Apply status filter to show only 'open' tickets"
       },
       {
         "type": "action",
-        "description": "Select multiple filters: status 'open', priority 'urgent', brand name filter, creator and assignee filters"
+        "description": "Apply priority filter to show only high priority"
       },
       {
         "type": "action",
-        "description": "Set a date range filter"
+        "description": "Set brand name filter"
       },
       {
-        "type": "assertion",
-        "description": "Ticket list updates showing tickets meeting all filter criteria"
+        "type": "action",
+        "description": "Set creator filter by Growth user"
+      },
+      {
+        "type": "action",
+        "description": "Set assignee filter by Ops user"
+      },
+      {
+        "type": "action",
+        "description": "Set date range filter for last 7 days"
       },
       {
         "type": "action",
@@ -283,218 +538,281 @@
       },
       {
         "type": "assertion",
-        "description": "Correct tickets are listed per page and sorting by priority then date is maintained"
+        "description": "Verify filtered ticket list matches all applied criteria on each page"
       }
     ]
   },
   {
-    "id": "TC009",
-    "title": "Activity timeline accuracy and completeness",
-    "description": "Verify the ticket activity timeline accurately logs and displays all actions (creation, status changes, comments, resolution, reopening) with correct actor details and timestamps in chronological order.",
+    "id": "TC016",
+    "title": "Activity timeline chronological order and live update",
+    "description": "Verify ticket activity timeline shows all actions in chronological order with correct actor, timestamps, and comments, and updates live after ticket changes.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open ticket detail page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify full activity timeline is displayed in chronological order"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify each activity shows actor details, timestamp and action comments"
+      },
+      {
+        "type": "action",
+        "description": "Perform update on ticket (e.g., add resolution remark)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify activity timeline updates automatically with new action"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Admin user manages users and changes passwords",
+    "description": "Verify Admin has access to user management pages, can view and edit user information, reset passwords, and changes are persisted.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Create a new escalation ticket"
+        "description": "Login as Admin user"
       },
       {
         "type": "action",
-        "description": "Perform ticket resolving as Ops user"
+        "description": "Navigate to User Management page"
       },
       {
         "type": "action",
-        "description": "Reopen the ticket as Growth user"
+        "description": "View list of all users"
       },
       {
         "type": "action",
-        "description": "Close the ticket as Growth user"
+        "description": "Edit user details (e.g., role change)"
       },
       {
         "type": "action",
-        "description": "Load the ticket detail page and activity timeline"
+        "description": "Initiate password change for a user"
       },
       {
         "type": "assertion",
-        "description": "Verify all actions are logged with correct actor, action type, comments, and timestamps in chronological order"
+        "description": "Verify user data and password changes are saved and effective"
       }
     ]
   },
   {
-    "id": "TC010",
-    "title": "Form inline validation and error messaging",
-    "description": "Verify that all UI forms enforce inline validation on input fields, prevent submission of invalid data, and display appropriate success or error messages.",
-    "category": "ui",
+    "id": "TC018",
+    "title": "Input validation and error handling on ticket creation API",
+    "description": "Verify API rejects ticket creation requests missing required fields or having invalid data types with proper validation errors.",
+    "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Open the ticket creation form"
-      },
-      {
-        "type": "action",
-        "description": "Leave required fields empty and attempt to submit"
+        "description": "Send POST /api/tickets request with missing brand name"
       },
       {
         "type": "assertion",
-        "description": "Validation messages appear inline for each missing required field"
+        "description": "Verify API responds with 400 Bad Request and descriptive error"
       },
       {
         "type": "action",
-        "description": "Fill invalid data in fields (e.g. overly long description, invalid priority)"
+        "description": "Send POST /api/tickets request with invalid priority value"
       },
       {
         "type": "assertion",
-        "description": "Field-specific error messages displayed preventing submission"
-      },
-      {
-        "type": "action",
-        "description": "Correct errors and submit form"
-      },
-      {
-        "type": "assertion",
-        "description": "Form submission succeeds and shows confirmation or redirects accordingly"
+        "description": "Verify API validation error response"
       }
     ]
   },
   {
-    "id": "TC011",
-    "title": "UI responsiveness and accessibility on different device sizes",
-    "description": "Verify that the UI renders and functions correctly on desktop, tablet, and mobile devices including responsive layout, accessible navigation, and visible status/priority indicators.",
-    "category": "ui",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Access the portal on desktop screen size"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify layout is optimized for desktop; navigation is visible; forms and tables align correctly"
-      },
-      {
-        "type": "action",
-        "description": "Resize browser or emulate tablet screen size"
-      },
-      {
-        "type": "assertion",
-        "description": "UI adjusts properly, navigation collapses or rearranges as designed; all elements remain accessible"
-      },
-      {
-        "type": "action",
-        "description": "Emulate mobile screen size"
-      },
-      {
-        "type": "assertion",
-        "description": "Layout is vertically stacked and readable; filtering and forms remain usable; status and priority indicators are clear"
-      },
-      {
-        "type": "action",
-        "description": "Validate accessibility using screen readers and keyboard navigation"
-      },
-      {
-        "type": "assertion",
-        "description": "All interactive elements are reachable via keyboard and labeled appropriately"
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "Security: Input validation and prevention of SQL injection and XSS",
-    "description": "Verify backend rejects malicious inputs preventing SQL injection and XSS attacks by using parameterized queries and proper input validation.",
+    "id": "TC019",
+    "title": "Security test: SQL injection prevention on ticket search",
+    "description": "Verify application and API sanitize and parameterize queries to prevent SQL injection attacks via search inputs.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Submit ticket creation or update requests containing SQL injection payloads such as \"'; DROP TABLE users;--\" in text fields"
+        "description": "Submit search filter with SQL injection payload in brand name, e.g. \"'+ OR 1=1--\""
       },
       {
         "type": "assertion",
-        "description": "Backend rejects input with validation error and no database compromise occurs"
-      },
-      {
-        "type": "action",
-        "description": "Submit ticket comments or descriptions containing XSS script tags"
-      },
-      {
-        "type": "assertion",
-        "description": "Scripts are sanitized or rejected, and no script execution occurs on UI"
+        "description": "Verify no unauthorized data is exposed and no errors occur"
       }
     ]
   },
   {
-    "id": "TC013",
-    "title": "Security: JWT token expiration and invalid token rejection",
-    "description": "Verify that expired or tampered JWT tokens are rejected by the backend API and user is prompted to re-authenticate.",
+    "id": "TC020",
+    "title": "Security test: JWT token expiration enforcement",
+    "description": "Verify JWT tokens expire properly and API denies access using expired tokens.",
     "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Log in and obtain a valid JWT token"
+        "description": "Login and receive JWT token"
       },
       {
         "type": "action",
-        "description": "Manipulate token expiry time to past or alter token payload"
+        "description": "Modify system time or wait until token expiration"
       },
       {
         "type": "action",
-        "description": "Call any authenticated API endpoint with expired or invalid token"
+        "description": "Call authenticated API endpoint with expired token"
       },
       {
         "type": "assertion",
-        "description": "Backend returns unauthorized error and frontend forces login"
+        "description": "Verify access is denied with 401 Unauthorized due to expired token"
       }
     ]
   },
   {
-    "id": "TC014",
-    "title": "Rate limiting enforcement to prevent brute force attacks",
-    "description": "Verify that the API enforces rate limiting on login and other critical endpoints to prevent brute force attacks and excessive requests.",
+    "id": "TC021",
+    "title": "Rate limiting enforcement on authentication endpoints",
+    "description": "Verify system limits number of login attempts per IP/user and blocks excessive requests with appropriate error response.",
     "category": "security",
-    "priority": "Medium",
+    "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Send multiple rapid login attempts with invalid credentials exceeding rate limit threshold"
+        "description": "Send multiple rapid login attempts with incorrect credentials exceeding rate limit threshold"
       },
       {
         "type": "assertion",
-        "description": "Further requests are blocked with rate limit error message"
-      },
-      {
-        "type": "action",
-        "description": "Send multiple requests to the ticket creation endpoint quickly to test rate limiting"
-      },
-      {
-        "type": "assertion",
-        "description": "Rate limiting is enforced and requests beyond threshold are blocked"
+        "description": "Verify API responds with rate limit error (429 Too Many Requests)"
       }
     ]
   },
   {
-    "id": "TC015",
-    "title": "UI error messaging and loading states",
-    "description": "Verify that UI shows appropriate loading spinners during async operations and displays user-friendly error messages on failures (e.g., network errors, server errors).",
+    "id": "TC022",
+    "title": "UI responsiveness and performance under load",
+    "description": "Verify UI pages load within acceptable timeframes and remain responsive on desktop and mobile devices during normal and heavy data volumes.",
     "category": "ui",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to tickets list and simulate slow network"
+        "description": "Access dashboard, ticket list, and ticket detail on desktop"
       },
       {
         "type": "assertion",
-        "description": "Loading spinner or skeleton displays while data is being fetched"
+        "description": "Verify pages load within performance requirements and UI elements respond instantly"
       },
       {
         "type": "action",
-        "description": "Simulate API error when submitting ticket creation form"
+        "description": "Repeat steps on mobile viewport"
       },
       {
         "type": "assertion",
-        "description": "User sees a clear error message explaining failure"
+        "description": "Verify UI adapts correctly, remains usable and performant"
+      },
+      {
+        "type": "action",
+        "description": "Load ticket list with large data set with filters and pagination"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI remains responsive and pagination works as expected"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Verify security headers and CORS configuration",
+    "description": "Ensure responses include Helmet security headers and CORS policies restrict access to trusted origins only.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send request to backend from allowed origin"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify CORS headers allow origin and required Helmet headers are present"
+      },
+      {
+        "type": "action",
+        "description": "Send request from disallowed origin"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied or blocked by CORS policy"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "File attachments upload context categorization verification",
+    "description": "Verify files uploaded to tickets are correctly tagged and stored according to their upload context: initial, resolution, reopening, and additional.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload initial files during ticket creation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify uploaded files have upload_context='initial'"
+      },
+      {
+        "type": "action",
+        "description": "Upload files during resolution submission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify files have upload_context='resolution'"
+      },
+      {
+        "type": "action",
+        "description": "Upload files during ticket reopen"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify files have upload_context='reopen'"
+      },
+      {
+        "type": "action",
+        "description": "Upload additional files after ticket created"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify files have upload_context='additional' or appropriate designation"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Verify unique ticket number generation format",
+    "description": "Ensure ticket numbers are generated uniquely with correct prefix (GROW or OPS) followed by YYYYMMDD and a 4-digit counter, without collisions.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create multiple tickets on the same day as Growth user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket numbers start with 'GROW-' followed by current date and 4-digit incremental number"
+      },
+      {
+        "type": "action",
+        "description": "Create multiple tickets on the same day as Ops user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket numbers start with 'OPS-' followed by current date and 4-digit incremental number"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no two tickets share the same ticket number"
       }
     ]
   }

@@ -45,15 +45,15 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Input Ops user email and password, then click Sign in button to login as Ops user
+        # Input growth@example.com and growth123 credentials and click Sign in button
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ops@example.com')
+        await page.wait_for_timeout(3000); await elem.fill('growth@example.com')
         
 
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ops123')
+        await page.wait_for_timeout(3000); await elem.fill('growth123')
         
 
         frame = context.pages[-1]
@@ -61,7 +61,23 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        assert False, 'Test plan execution failed: generic failure assertion'
+        # Try logging in with admin@example.com and admin123 credentials as suggested by the demo credentials on the page.
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('admin@example.com')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('admin123')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        assert False, 'Test plan execution failed: generic failure assertion.'
         await asyncio.sleep(5)
     
     finally:

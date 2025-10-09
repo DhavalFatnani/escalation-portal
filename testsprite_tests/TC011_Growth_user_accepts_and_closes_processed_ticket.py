@@ -45,7 +45,7 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # Input Growth user email and password, then click Sign in button to login as Growth user and obtain JWT token
+        # Input Growth user email and password, then click Sign in button
         frame = context.pages[-1]
         elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('growth@example.com')
@@ -61,7 +61,65 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # Generic failing assertion since expected result is unknown
+        # Check for any visible error messages or validation prompts on the login page
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # Input password again and click Sign in button
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('growth123')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # Clear password field, re-input password carefully, then click Sign in again
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('growth123')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # Try to clear both email and password fields, then re-input credentials carefully and click Sign in
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('growth@example.com')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/div[2]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('growth123')
+        
+
+        frame = context.pages[-1]
+        elem = frame.locator('xpath=html/body/div/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         assert False, 'Test plan execution failed: generic failure assertion'
         await asyncio.sleep(5)
     

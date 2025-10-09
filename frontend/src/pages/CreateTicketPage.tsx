@@ -73,15 +73,15 @@ export default function CreateTicketPage() {
   };
 
   const issueTypes: { value: IssueType; label: string }[] = [
-    { value: 'product_not_as_listed', label: 'Product Not As Listed' },
-    { value: 'giant_discrepancy_brandless_inverterless', label: 'Giant Discrepancy (Brandless/Inverterless)' },
-    { value: 'physical_vs_scale_mismatch', label: 'Physical vs Scale Mismatch' },
+    { value: 'product_not_as_listed', label: 'Product Not Live After Return' },
+    { value: 'giant_discrepancy_brandless_inverterless', label: 'GRN Discrepancy' },
+    { value: 'physical_vs_scale_mismatch', label: 'Physical Product vs SKU Mismatch' },
     { value: 'other', label: 'Other' },
   ];
 
   const expectedOutputOptions = [
     'SKU Level sheet (with Reason for not Live or went Live)',
-    'SKU Level sheet (with Updated Products Received Qty)',
+    'SKU Level sheet (with Updated Product Received Qty)',
     'Images',
     'SKU Level sheet (with Remarks)',
     'Other',
