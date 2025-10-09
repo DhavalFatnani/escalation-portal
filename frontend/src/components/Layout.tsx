@@ -191,7 +191,7 @@ export default function Layout() {
       <footer className="glass border-t border-white/50 mt-auto">
         <div className="w-full px-4 sm:px-6 lg:px-12 py-4">
           <p className="text-center text-sm text-gray-500">
-            © 2024 Escalation Portal. All rights reserved.
+            © 2025 Escalation Portal. All rights reserved.
           </p>
         </div>
       </footer>
