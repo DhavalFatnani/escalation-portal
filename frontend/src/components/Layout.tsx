@@ -46,17 +46,6 @@ export default function Layout() {
               </h1>
             </Link>
 
-            {/* Mobile New Ticket Button */}
-            {(user?.role === 'growth' || user?.role === 'ops') && (
-              <Link
-                to="/tickets/new"
-                className="md:hidden flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
-                title="New Ticket"
-              >
-                <Plus className="w-5 h-5" />
-              </Link>
-            )}
-
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-2">
               <Link
