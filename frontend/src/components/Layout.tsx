@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { Home, Ticket, Plus, Users, LogOut, Shield, ChevronDown, FileX } from 'lucide-react';
+import { Home, Ticket, Plus, Users, LogOut, Shield, ChevronDown, FileX, User } from 'lucide-react';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { attachmentService } from '../services/attachmentService';
@@ -37,16 +37,14 @@ export default function Layout() {
         <div className="w-full px-4 sm:px-6 lg:px-12">
           <div className="flex justify-between items-center h-20">
             {/* Logo & Brand */}
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
-                <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-transform group-hover:scale-105">
+                <img src="/logo.svg" alt="KNOT Logo" className="w-12 h-12 rounded-xl" />
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Escalation Portal
               </h1>
-            </div>
+            </Link>
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-2">
@@ -153,7 +151,16 @@ export default function Layout() {
                     className="fixed inset-0 z-10" 
                     onClick={() => setShowUserMenu(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl border border-gray-200 shadow-xl py-1 z-20">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-xl py-1 z-20">
+                    <Link
+                      to="/profile"
+                      onClick={() => setShowUserMenu(false)}
+                      className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      My Profile
+                    </Link>
+                    <div className="border-t border-gray-100 my-1" />
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors font-medium"

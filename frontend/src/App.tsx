@@ -10,6 +10,7 @@ import CreateTicketPage from './pages/CreateTicketPage';
 import UsersManagementPage from './pages/UsersManagementPage';
 import SystemSettingsPage from './pages/SystemSettingsPage';
 import DeletionRequestsPage from './pages/DeletionRequestsPage';
+import UserProfilePage from './pages/UserProfilePage';
 import Layout from './components/Layout';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
             // Normal authenticated routes
             <Route element={<Layout />}>
               <Route path="/" element={user?.role === 'admin' ? <AdminDashboard /> : <DashboardPage />} />
+              <Route path="/profile" element={<UserProfilePage />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<UsersManagementPage />} />
               <Route path="/admin/settings" element={<SystemSettingsPage />} />
