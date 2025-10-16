@@ -9,6 +9,7 @@ import ticketRoutes from './routes/tickets';
 import userRoutes from './routes/users';
 import attachmentRoutes from './routes/attachments';
 import adminRoutes from './routes/admin';
+import healthRoutes from './routes/health';
 
 dotenv.config();
 
@@ -49,17 +50,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Routes
+// Routes (order matters! Specific routes before wildcard routes)
+app.use('/api/health', healthRoutes); // No auth required - for uptime monitoring
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api', attachmentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', attachmentRoutes); // Must be last - catches /api/* wildcard
 
 // 404 handler
 app.use((req, res) => {
