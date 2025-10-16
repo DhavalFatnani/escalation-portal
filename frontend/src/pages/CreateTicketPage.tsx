@@ -57,9 +57,13 @@ export default function CreateTicketPage() {
     // Prepare final data with custom values if "Other" was selected
     const finalData = { ...formData };
     
-    // If issue type is "other" and custom value is provided
+    // If issue type is "other" and custom value is provided, append to description
     if (formData.issue_type === 'other' && customIssueType.trim()) {
-      finalData.issue_type = customIssueType.trim() as IssueType;
+      // Keep issue_type as "other" (to pass backend validation)
+      // Append custom issue type to description
+      const customIssueNote = `\n\n[Custom Issue Type: ${customIssueType.trim()}]`;
+      finalData.description = (formData.description || '') + customIssueNote;
+      finalData.issue_type = 'other'; // Keep as 'other' enum value
     }
     
     // If expected output is "Other" and custom value is provided
