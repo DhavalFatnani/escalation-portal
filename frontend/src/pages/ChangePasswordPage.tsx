@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, CheckCircle, Lock, Eye, EyeOff, Key, Shield, ArrowLeft } from 'lucide-react';
 import { userService } from '../services/userService';
 import { useAuthStore } from '../stores/authStore';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function ChangePasswordPage() {
   const [formData, setFormData] = useState({
@@ -19,6 +21,7 @@ export default function ChangePasswordPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { modalState, hideModal, showSuccess } = useModal();
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -71,11 +74,16 @@ export default function ChangePasswordPage() {
       });
 
       // Show success message
-      alert('Password changed successfully! Please log in with your new password.');
+      showSuccess(
+        'Password Changed',
+        'Your password has been changed successfully! Please log in with your new password.'
+      );
       
-      // Logout and redirect to login
-      logout();
-      navigate('/login');
+      // Logout and redirect after a brief delay to show the message
+      setTimeout(() => {
+        logout();
+        navigate('/login');
+      }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to change password');
     } finally {
@@ -323,6 +331,19 @@ export default function ChangePasswordPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal System */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={hideModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+      />
     </div>
   );
 }

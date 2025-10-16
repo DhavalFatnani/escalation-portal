@@ -3,10 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { userService } from '../services/userService';
 import { Plus, Trash2, AlertCircle, Copy, Check, Users, Shield, Mail, UserCircle, Clock } from 'lucide-react';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function UsersManagementPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
+  const { modalState, hideModal, showSuccess, showError, showDelete } = useModal();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,12 +58,12 @@ export default function UsersManagementPage() {
     mutationFn: userService.deleteUser,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      alert('✅ User deleted successfully');
+      showSuccess('User Deleted', 'User has been successfully deleted from the system.');
     },
     onError: (err: any) => {
       const errorMessage = err.response?.data?.error || 'Failed to delete user';
       const errorDetails = err.response?.data?.details || '';
-      alert(`❌ ${errorMessage}\n\n${errorDetails}`);
+      showError('Delete Failed', `${errorMessage}\n\n${errorDetails}`);
     },
   });
 
@@ -103,6 +106,19 @@ export default function UsersManagementPage() {
       case 'growth': return 'bg-gradient-to-r from-green-500 to-emerald-500 text-white';
       default: return 'bg-gray-200 text-gray-700';
     }
+  };
+
+  const handleShowDeleteConfirm = (userId: string, userName: string) => {
+    showDelete(
+      'Delete User',
+      `Are you sure you want to delete ${userName}?\n\nThis action cannot be undone and will remove:\n- User account\n- All user data\n- Access permissions`,
+      () => {
+        deleteUserMutation.mutate(userId);
+        hideModal();
+      },
+      'Delete User',
+      'Cancel'
+    );
   };
 
   if (isLoading) {
@@ -158,7 +174,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {adminUsers.map((u: any, index: number) => (
-                  <UserCard key={u.id} user={u} currentUser={user} deleteUser={deleteUserMutation.mutate} getRoleBadgeStyle={getRoleBadgeStyle} index={index} />
+                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} />
                 ))}
               </div>
             </div>
@@ -183,7 +199,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {growthUsers.map((u: any, index: number) => (
-                  <UserCard key={u.id} user={u} currentUser={user} deleteUser={deleteUserMutation.mutate} getRoleBadgeStyle={getRoleBadgeStyle} index={index} />
+                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} />
                 ))}
               </div>
             </div>
@@ -208,7 +224,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {opsUsers.map((u: any, index: number) => (
-                  <UserCard key={u.id} user={u} currentUser={user} deleteUser={deleteUserMutation.mutate} getRoleBadgeStyle={getRoleBadgeStyle} index={index} />
+                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} />
                 ))}
               </div>
             </div>
@@ -370,6 +386,19 @@ export default function UsersManagementPage() {
           </div>
         </div>
       )}
+
+      {/* Modal System */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={hideModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+      />
     </div>
   );
 }
@@ -378,12 +407,12 @@ export default function UsersManagementPage() {
 interface UserCardProps {
   user: any;
   currentUser: any;
-  deleteUser: (id: string) => void;
   getRoleBadgeStyle: (role: string) => string;
   index: number;
+  showDeleteConfirm: (userId: string, userName: string) => void;
 }
 
-function UserCard({ user: u, currentUser, deleteUser, getRoleBadgeStyle, index }: UserCardProps) {
+function UserCard({ user: u, currentUser, getRoleBadgeStyle, index, showDeleteConfirm }: UserCardProps) {
   return (
     <div 
       className="card-modern group hover:-translate-y-2 animate-slide-in-right"
@@ -404,11 +433,7 @@ function UserCard({ user: u, currentUser, deleteUser, getRoleBadgeStyle, index }
         </div>
         {u.id !== currentUser?.id && (
           <button
-            onClick={() => {
-              if (confirm(`⚠️ Delete user ${u.name}?\n\nThis action cannot be undone.`)) {
-                deleteUser(u.id);
-              }
-            }}
+            onClick={() => showDeleteConfirm(u.id, u.name)}
             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Delete user"
           >

@@ -4,11 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService } from '../services/userService';
 import { User, Mail, Shield, Calendar, Key, ArrowLeft, CheckCircle, Camera, Edit2, Save, X } from 'lucide-react';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function UserProfilePage() {
   const { user, setUser } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { modalState, hideModal, showSuccess, showError } = useModal();
   const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState(user?.name || '');
@@ -30,11 +33,11 @@ export default function UserProfilePage() {
       setUser(data.user);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       setUploadingImage(false);
-      alert('✅ Profile picture updated successfully!');
+      showSuccess('Profile Picture Updated', 'Your profile picture has been updated successfully!');
     },
     onError: (error: any) => {
       setUploadingImage(false);
-      alert(`❌ ${error.response?.data?.error || 'Failed to upload profile picture'}`);
+      showError('Upload Failed', error.response?.data?.error || 'Failed to upload profile picture');
     },
   });
 
@@ -44,10 +47,10 @@ export default function UserProfilePage() {
       setUser(data.user);
       queryClient.invalidateQueries({ queryKey: ['user'] });
       setIsEditingName(false);
-      alert('✅ Name updated successfully!');
+      showSuccess('Name Updated', 'Your name has been updated successfully!');
     },
     onError: (error: any) => {
-      alert(`❌ ${error.response?.data?.error || 'Failed to update name'}`);
+      showError('Update Failed', error.response?.data?.error || 'Failed to update name');
     },
   });
 
@@ -58,13 +61,13 @@ export default function UserProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('❌ Please select an image file');
+      showError('Invalid File', 'Please select an image file');
       return;
     }
 
     // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
-      alert('❌ Image size must be less than 2MB');
+      showError('File Too Large', 'Image size must be less than 2MB');
       return;
     }
 
@@ -77,14 +80,14 @@ export default function UserProfilePage() {
     };
     reader.onerror = () => {
       setUploadingImage(false);
-      alert('❌ Failed to read image file');
+      showError('Read Error', 'Failed to read image file');
     };
     reader.readAsDataURL(file);
   };
 
   const handleSaveName = () => {
     if (!editedName.trim()) {
-      alert('❌ Name cannot be empty');
+      showError('Validation Error', 'Name cannot be empty');
       return;
     }
     updateNameMutation.mutate(editedName.trim());
@@ -410,6 +413,19 @@ export default function UserProfilePage() {
           </div>
         </div>
       )}
+
+      {/* Modal System */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={hideModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+      />
     </div>
   );
 }

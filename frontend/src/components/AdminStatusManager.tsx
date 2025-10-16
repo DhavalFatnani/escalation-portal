@@ -66,7 +66,7 @@ const AdminStatusManager: React.FC<AdminStatusManagerProps> = ({
 
   const handleConfirmStatusChange = () => {
     if (!reason.trim()) {
-      alert('Please provide a reason for the status change.');
+      // Don't close modal, just show a subtle error hint
       return;
     }
 

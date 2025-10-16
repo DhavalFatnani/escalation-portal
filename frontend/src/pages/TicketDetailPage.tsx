@@ -301,7 +301,7 @@ export default function TicketDetailPage() {
       }
     } catch (error) {
       console.error('Download failed:', error);
-      alert('Failed to download file. Please try again.');
+      showError('Download Failed', 'Failed to download file. Please try again.');
     }
   };
 
