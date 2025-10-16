@@ -148,9 +148,12 @@ export default function FileUpload({
         <div className="p-3 bg-green-50 border border-green-200 rounded-md flex items-start">
           <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
           <div className="text-sm text-green-700">
-            <strong>Images compressed!</strong> Saved{' '}
+            <strong>Files compressed!</strong> Saved{' '}
             {formatFileSize(compressionStats.originalSize - compressionStats.compressedSize)} (
             {Math.round(((compressionStats.originalSize - compressionStats.compressedSize) / compressionStats.originalSize) * 100)}% smaller)
+            <p className="text-xs text-green-600 mt-1">
+              Optimized storage usage - helps stay within free tier limits
+            </p>
           </div>
         </div>
       )}
