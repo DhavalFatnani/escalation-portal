@@ -31,6 +31,7 @@ export default function TicketDetailPage() {
   const [deletionReason, setDeletionReason] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [showAdminStatusModal, setShowAdminStatusModal] = useState(false);
   
   // Modal system
   const { modalState, hideModal, showSuccess, showError, showDelete } = useModal();
@@ -461,13 +462,7 @@ export default function TicketDetailPage() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      // Scroll to admin section
-                      const adminSection = document.getElementById('admin-section');
-                      if (adminSection) {
-                        adminSection.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
+                    onClick={() => setShowAdminStatusModal(true)}
                     className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-700 bg-white border border-purple-300 rounded-md hover:bg-purple-50"
                   >
                     <Zap className="w-3 h-3 mr-1" />
@@ -903,17 +898,17 @@ export default function TicketDetailPage() {
             onDownload={handleDownload}
           />
 
-          {/* Admin Status Manager */}
+          {/* Admin Status Manager Modal */}
           {user?.role === 'admin' && (
-            <div id="admin-section" className="mt-8">
-              <AdminStatusManager
-                currentStatus={ticket.status}
-                onStatusChange={(status, reason) => {
-                  adminStatusMutation.mutate({ status, reason });
-                }}
-                isChanging={adminStatusMutation.isPending}
-              />
-            </div>
+            <AdminStatusManager
+              isOpen={showAdminStatusModal}
+              onClose={() => setShowAdminStatusModal(false)}
+              currentStatus={ticket.status}
+              onStatusChange={(status, reason) => {
+                adminStatusMutation.mutate({ status, reason });
+              }}
+              isChanging={adminStatusMutation.isPending}
+            />
           )}
 
           {/* Modal System */}

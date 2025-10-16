@@ -2,20 +2,21 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { authService } from '../services/authService';
-import { AlertCircle, Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
+  const { modalState, hideModal, showError } = useModal();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -23,7 +24,8 @@ export default function LoginPage() {
       login(user, token);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      const errorMessage = err.response?.data?.error || 'Login failed. Please try again.';
+      showError('Login Failed', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -47,13 +49,6 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <div className="glass rounded-2xl shadow-lg p-8">
-          {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start">
-              <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
-              <span className="text-sm text-red-700">{error}</span>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Input */}
             <div>
@@ -127,6 +122,20 @@ export default function LoginPage() {
           © 2024 Escalation Portal. All rights reserved.
         </p>
       </div>
+
+      {/* Modal System */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={hideModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        size={modalState.size}
+      />
     </div>
   );
 }

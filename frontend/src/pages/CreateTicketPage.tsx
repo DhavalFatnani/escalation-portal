@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { CreateTicketDTO, IssueType, TicketPriority } from '../types';
-import { AlertCircle, ArrowLeft, Check, Sparkles, FileText, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Check, Sparkles, FileText, AlertTriangle } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import { useAuthStore } from '../stores/authStore';
 import { issueTypes } from '../utils/issueTypeLabels';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function CreateTicketPage() {
   const navigate = useNavigate();
@@ -19,12 +21,14 @@ export default function CreateTicketPage() {
     priority: 'medium',
   });
   const [files, setFiles] = useState<File[]>([]);
-  const [error, setError] = useState('');
   
   // Custom inputs for "Other" selections
   const [customIssueType, setCustomIssueType] = useState('');
   const [customExpectedOutput, setCustomExpectedOutput] = useState('');
   const [selectedExpectedOutput, setSelectedExpectedOutput] = useState('');
+  
+  // Modal system
+  const { modalState, hideModal, showError } = useModal();
 
   const createMutation = useMutation({
     mutationFn: async (formData: CreateTicketDTO) => {
@@ -42,16 +46,15 @@ export default function CreateTicketPage() {
       navigate(`/tickets/${data.ticket.ticket_number}`);
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error || 'Failed to create ticket');
+      showError('Ticket Creation Failed', err.response?.data?.error || 'Failed to create ticket');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     
     if (!formData.brand_name.trim()) {
-      setError('Brand name is required');
+      showError('Validation Error', 'Brand name is required');
       return;
     }
 
@@ -126,12 +129,6 @@ export default function CreateTicketPage() {
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg flex items-start animate-slide-in-right">
-            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-3 flex-shrink-0" />
-            <span className="text-sm text-red-700 font-medium">{error}</span>
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Brand Name */}
@@ -322,6 +319,20 @@ export default function CreateTicketPage() {
           </div>
         </form>
       </div>
+
+      {/* Modal System */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={hideModal}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onConfirm={modalState.onConfirm}
+        onCancel={modalState.onCancel}
+        confirmText={modalState.confirmText}
+        cancelText={modalState.cancelText}
+        size={modalState.size}
+      />
     </div>
   );
 }
