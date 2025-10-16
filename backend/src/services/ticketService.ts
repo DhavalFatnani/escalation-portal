@@ -11,6 +11,7 @@ import {
 } from '../types';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+// No longer need mapping since we use labels directly
 
 export class TicketService {
   async createTicket(userId: string, data: CreateTicketDTO): Promise<Ticket> {
@@ -35,7 +36,7 @@ export class TicketService {
       );
       const ticketNumber = ticketNumberResult.rows[0].ticket_number;
 
-      // Insert ticket
+      // Insert ticket (issue_type is now already a label)
       const ticketResult = await client.query(
         `INSERT INTO tickets 
         (ticket_number, created_by, brand_name, description, issue_type, expected_output, priority, status, created_at, updated_at)
@@ -214,6 +215,7 @@ export class TicketService {
       }
       if (data.issue_type !== undefined) {
         updates.push(`issue_type = $${++paramCount}`);
+        // Issue type is now already a label
         params.push(data.issue_type);
       }
       if (data.expected_output !== undefined) {

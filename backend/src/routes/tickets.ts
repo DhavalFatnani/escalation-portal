@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuth, requireGrowth, requireOps, AuthRequest } from '../middleware/auth';
 import { validate, ticketSchemas } from '../middleware/validation';
 import { ticketService } from '../services/ticketService';
-import { query } from '../config/database';
+import { query, getClient } from '../config/database';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -234,7 +234,7 @@ router.delete('/:ticket_number', async (req: AuthRequest, res, next) => {
   }
 });
 
-// Force status change (Admin only)
+// Force status change (Admin only) - Simplified with proper reversion logic
 router.post('/:ticket_number/force-status', async (req: AuthRequest, res, next) => {
   try {
     if (req.user!.role !== 'admin') {
@@ -247,28 +247,94 @@ router.post('/:ticket_number/force-status', async (req: AuthRequest, res, next) 
       return res.status(400).json({ error: 'Invalid status' });
     }
 
+    if (!reason || reason.trim().length < 10) {
+      return res.status(400).json({ error: 'Reason is required and must be at least 10 characters' });
+    }
+
     const ticket = await ticketService.getTicketByNumber(req.params.ticket_number);
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
-    await query(
-      `UPDATE tickets SET status = $1, updated_at = now(), last_status_change_at = now() 
-       WHERE ticket_number = $2`,
-      [status, req.params.ticket_number]
-    );
-
-    // Log activity
-    await query(
-      `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
-       VALUES ($1, $2, 'status_forced', $3, now())`,
-      [ticket.id, req.user!.id, reason || `Admin forced status change to: ${status}`]
-    );
-
-    logger.info(`Ticket status forced: ${req.params.ticket_number} → ${status} by admin ${req.user!.email}`);
+    const client = await getClient();
     
-    const updatedTicket = await ticketService.getTicketByNumber(req.params.ticket_number);
-    res.json({ ticket: updatedTicket });
+    try {
+      await client.query('BEGIN');
+
+      const oldStatus = ticket.status;
+      
+      // Update ticket status
+      await client.query(
+        `UPDATE tickets SET status = $1, updated_at = now(), last_status_change_at = now() 
+         WHERE ticket_number = $2`,
+        [status, req.params.ticket_number]
+      );
+
+      // Handle status-specific logic for proper reversion
+      if (status === 'open') {
+        // If reverting to open, clear resolution data but keep history
+        await client.query(
+          `UPDATE tickets SET 
+           resolution_remarks = NULL,
+           resolved_at = NULL,
+           current_assignee = NULL
+           WHERE ticket_number = $1`,
+          [req.params.ticket_number]
+        );
+      } else if (status === 'processed') {
+        // If setting to processed, ensure there's a resolution
+        if (!ticket.resolution_remarks) {
+          await client.query(
+            `UPDATE tickets SET resolution_remarks = $1 WHERE ticket_number = $2`,
+            ['Admin marked as processed', req.params.ticket_number]
+          );
+        }
+      } else if (status === 'resolved') {
+        // If setting to resolved, ensure resolution exists and set resolved_at
+        if (!ticket.resolution_remarks) {
+          await client.query(
+            `UPDATE tickets SET 
+             resolution_remarks = $1,
+             resolved_at = now()
+             WHERE ticket_number = $2`,
+            ['Admin marked as resolved', req.params.ticket_number]
+          );
+        } else {
+          await client.query(
+            `UPDATE tickets SET resolved_at = now() WHERE ticket_number = $1`,
+            [req.params.ticket_number]
+          );
+        }
+      } else if (status === 're-opened') {
+        // If reopening, clear resolved_at but keep resolution history
+        await client.query(
+          `UPDATE tickets SET resolved_at = NULL WHERE ticket_number = $1`,
+          [req.params.ticket_number]
+        );
+      }
+
+      // Log activity with detailed information
+      await client.query(
+        `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
+         VALUES ($1, $2, 'admin_status_change', $3, now())`,
+        [ticket.id, req.user!.id, `Admin changed status from "${oldStatus}" to "${status}". Reason: ${reason.trim()}`]
+      );
+
+      await client.query('COMMIT');
+
+      logger.info(`Admin status change: ${req.params.ticket_number} ${oldStatus} → ${status} by ${req.user!.email}`);
+      
+      const updatedTicket = await ticketService.getTicketByNumber(req.params.ticket_number);
+      res.json({ 
+        ticket: updatedTicket,
+        message: `Status successfully changed from "${oldStatus}" to "${status}"`
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   } catch (error) {
     next(error);
   }

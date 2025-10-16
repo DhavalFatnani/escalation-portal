@@ -5,10 +5,10 @@ export type TicketStatus = 'open' | 'processed' | 'resolved' | 're-opened' | 'cl
 export type TicketPriority = 'urgent' | 'high' | 'medium' | 'low';
 
 export type IssueType = 
-  | 'product_not_as_listed'
-  | 'giant_discrepancy_brandless_inverterless'
-  | 'physical_vs_scale_mismatch'
-  | 'other';
+  | 'Product Not Live After Return'
+  | 'GRN Discrepancy'
+  | 'Physical Product vs SKU Mismatch'
+  | 'Other';
 
 export interface User {
   id: string;

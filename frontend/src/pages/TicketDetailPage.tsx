@@ -9,7 +9,10 @@ import { ArrowLeft, Clock, User, AlertCircle, File, Download, Trash2, Paperclip,
 import { TicketStatus } from '../types';
 import FileUpload from '../components/FileUpload';
 import FilePreviewModal from '../components/FilePreviewModal';
+import AdminStatusManager from '../components/AdminStatusManager';
 import { getIssueTypeLabel } from '../utils/issueTypeLabels';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function TicketDetailPage() {
   const { ticketNumber } = useParams<{ ticketNumber: string }>();
@@ -29,10 +32,8 @@ export default function TicketDetailPage() {
   const [otpCode, setOtpCode] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
   
-  // Admin controls
-  const [showForceStatusModal, setShowForceStatusModal] = useState(false);
-  const [forceStatus, setForceStatus] = useState<TicketStatus>('open');
-  const [forceReason, setForceReason] = useState('');
+  // Modal system
+  const { modalState, hideModal, showSuccess, showError, showDelete } = useModal();
 
   const { data: ticketData, isLoading } = useQuery({
     queryKey: ['ticket', ticketNumber],
@@ -83,7 +84,7 @@ export default function TicketDetailPage() {
       setDeletingAttachment(null);
       setDeletionReason('');
       setError('');
-      alert(data.message || 'Deletion request submitted successfully. You will be notified when approved.');
+      showSuccess('Deletion Request Submitted', data.message || 'Deletion request submitted successfully. You will be notified when approved.');
     },
     onError: (err: any) => {
       setError(err.response?.data?.error || 'Failed to submit deletion request.');
@@ -99,7 +100,7 @@ export default function TicketDetailPage() {
       setDeletingAttachment(null);
       setOtpCode('');
       setError('');
-      alert('File deleted successfully!');
+      showSuccess('File Deleted', 'File deleted successfully!');
     },
     onError: (err: any) => {
       setError(err.response?.data?.error || 'Failed to delete attachment. Please check the OTP code.');
@@ -350,17 +351,16 @@ export default function TicketDetailPage() {
     },
   });
 
-  const forceStatusMutation = useMutation({
-    mutationFn: () => adminService.forceStatusChange(ticketNumber!, forceStatus, forceReason),
+  const adminStatusMutation = useMutation({
+    mutationFn: ({ status, reason }: { status: TicketStatus; reason: string }) => 
+      adminService.forceStatusChange(ticketNumber!, status, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['ticket-activities', ticketNumber] });
-      setShowForceStatusModal(false);
-      setForceReason('');
-      setError('');
+      showSuccess('Status Changed', 'Ticket status has been updated successfully.');
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error || 'Failed to force status change');
+      showError('Status Change Failed', err.response?.data?.error || 'Failed to change ticket status.');
     },
   });
 
@@ -461,20 +461,34 @@ export default function TicketDetailPage() {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setShowForceStatusModal(true)}
+                    onClick={() => {
+                      // Scroll to admin section
+                      const adminSection = document.getElementById('admin-section');
+                      if (adminSection) {
+                        adminSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
                     className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-700 bg-white border border-purple-300 rounded-md hover:bg-purple-50"
                   >
                     <Zap className="w-3 h-3 mr-1" />
-                    Force Status
+                    Manage Status
                   </button>
                   <button
                     onClick={() => {
-                      if (confirm(`⚠️ Are you sure you want to DELETE ticket ${ticket.ticket_number}?\n\nThis action cannot be undone and will remove:\n- The ticket\n- All activities\n- All attachments\n\nType "DELETE" if you're absolutely sure.`)) {
-                        const confirmation = prompt('Type DELETE to confirm:');
-                        if (confirmation === 'DELETE') {
-                          deleteTicketMutation.mutate();
-                        }
-                      }
+                      showDelete(
+                        'Delete Ticket',
+                        `Are you sure you want to DELETE ticket ${ticket.ticket_number}?\n\nThis action cannot be undone and will remove:\n- The ticket\n- All activities\n- All attachments`,
+                        () => {
+                          const confirmation = prompt('Type DELETE to confirm:');
+                          if (confirmation === 'DELETE') {
+                            deleteTicketMutation.mutate();
+                          } else {
+                            showError('Deletion Cancelled', 'Please type "DELETE" exactly to confirm deletion.');
+                          }
+                        },
+                        'Delete Ticket',
+                        'Cancel'
+                      );
                     }}
                     disabled={deleteTicketMutation.isPending}
                     className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
@@ -889,84 +903,32 @@ export default function TicketDetailPage() {
             onDownload={handleDownload}
           />
 
-          {/* Force Status Modal (Admin Only) */}
-          {showForceStatusModal && user?.role === 'admin' && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-              <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-                <div className="flex items-center mb-4">
-                  <Zap className="w-6 h-6 text-purple-600 mr-2" />
-                  <h3 className="text-xl font-semibold text-gray-900">Force Status Change</h3>
-                </div>
-                
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <p className="text-sm text-yellow-800">
-                    ⚠️ This bypasses normal workflow rules. Use only when necessary.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      New Status
-                    </label>
-                    <select
-                      value={forceStatus}
-                      onChange={(e) => setForceStatus(e.target.value as TicketStatus)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="open">Open</option>
-                      <option value="processed">Processed</option>
-                      <option value="resolved">Resolved</option>
-                      <option value="re-opened">Re-opened</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Reason (Required)
-                    </label>
-                    <textarea
-                      value={forceReason}
-                      onChange={(e) => setForceReason(e.target.value)}
-                      rows={3}
-                      placeholder="Explain why you're forcing this status change..."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      required
-                    />
-                  </div>
-
-                  {error && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
-                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 mr-2 flex-shrink-0" />
-                      <span className="text-sm text-red-700">{error}</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end space-x-3 pt-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowForceStatusModal(false);
-                        setForceReason('');
-                        setError('');
-                      }}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => forceStatusMutation.mutate()}
-                      disabled={!forceReason.trim() || forceStatusMutation.isPending}
-                      className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {forceStatusMutation.isPending ? 'Forcing...' : 'Force Status Change'}
-                    </button>
-                  </div>
-                </div>
-              </div>
+          {/* Admin Status Manager */}
+          {user?.role === 'admin' && (
+            <div id="admin-section" className="mt-8">
+              <AdminStatusManager
+                currentStatus={ticket.status}
+                onStatusChange={(status, reason) => {
+                  adminStatusMutation.mutate({ status, reason });
+                }}
+                isChanging={adminStatusMutation.isPending}
+              />
             </div>
           )}
+
+          {/* Modal System */}
+          <Modal
+            isOpen={modalState.isOpen}
+            onClose={hideModal}
+            type={modalState.type}
+            title={modalState.title}
+            message={modalState.message}
+            onConfirm={modalState.onConfirm}
+            onCancel={modalState.onCancel}
+            confirmText={modalState.confirmText}
+            cancelText={modalState.cancelText}
+            size={modalState.size}
+          />
 
           {/* Request Deletion Modal */}
           {deletingAttachment && !showOTPModal && (

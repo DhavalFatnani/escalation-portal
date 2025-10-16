@@ -1,28 +1,20 @@
 import { IssueType } from '../types';
 
 /**
- * Maps issue type enum values to their display labels
+ * Since we now use labels directly as the type, this function just returns the value
  */
 export const getIssueTypeLabel = (issueType: IssueType | null | undefined): string => {
   if (!issueType) return 'N/A';
-  
-  const labels: Record<IssueType, string> = {
-    'product_not_as_listed': 'Product Not Live After Return',
-    'giant_discrepancy_brandless_inverterless': 'GRN Discrepancy',
-    'physical_vs_scale_mismatch': 'Physical Product vs SKU Mismatch',
-    'other': 'Other',
-  };
-  
-  return labels[issueType] || issueType.replace(/_/g, ' ');
+  return issueType; // Now the type IS the label
 };
 
 /**
- * All issue types with their labels for forms and dropdowns
+ * All issue types - now using labels directly as values
  */
 export const issueTypes: { value: IssueType; label: string }[] = [
-  { value: 'product_not_as_listed', label: 'Product Not Live After Return' },
-  { value: 'giant_discrepancy_brandless_inverterless', label: 'GRN Discrepancy' },
-  { value: 'physical_vs_scale_mismatch', label: 'Physical Product vs SKU Mismatch' },
-  { value: 'other', label: 'Other' },
+  { value: 'Product Not Live After Return', label: 'Product Not Live After Return' },
+  { value: 'GRN Discrepancy', label: 'GRN Discrepancy' },
+  { value: 'Physical Product vs SKU Mismatch', label: 'Physical Product vs SKU Mismatch' },
+  { value: 'Other', label: 'Other' },
 ];
 

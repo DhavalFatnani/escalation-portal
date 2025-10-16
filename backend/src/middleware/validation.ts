@@ -23,10 +23,10 @@ export const ticketSchemas = {
     brand_name: z.string().min(1).max(255),
     description: z.string().optional(),
     issue_type: z.enum([
-      'product_not_as_listed',
-      'giant_discrepancy_brandless_inverterless',
-      'physical_vs_scale_mismatch',
-      'other'
+      'Product Not Live After Return',
+      'GRN Discrepancy',
+      'Physical Product vs SKU Mismatch',
+      'Other'
     ]).optional(),
     expected_output: z.string().optional(),
     priority: z.enum(['urgent', 'high', 'medium', 'low']),
@@ -36,10 +36,10 @@ export const ticketSchemas = {
     brand_name: z.string().min(1).max(255).optional(),
     description: z.string().optional(),
     issue_type: z.enum([
-      'product_not_as_listed',
-      'giant_discrepancy_brandless_inverterless',
-      'physical_vs_scale_mismatch',
-      'other'
+      'Product Not Live After Return',
+      'GRN Discrepancy',
+      'Physical Product vs SKU Mismatch',
+      'Other'
     ]).optional(),
     expected_output: z.string().optional(),
     priority: z.enum(['urgent', 'high', 'medium', 'low']).optional(),

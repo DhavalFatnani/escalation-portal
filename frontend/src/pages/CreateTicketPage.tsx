@@ -58,13 +58,13 @@ export default function CreateTicketPage() {
     // Prepare final data with custom values if "Other" was selected
     const finalData = { ...formData };
     
-    // If issue type is "other" and custom value is provided, append to description
-    if (formData.issue_type === 'other' && customIssueType.trim()) {
-      // Keep issue_type as "other" (to pass backend validation)
+    // If issue type is "Other" and custom value is provided, append to description
+    if (formData.issue_type === 'Other' && customIssueType.trim()) {
+      // Keep issue_type as "Other" (to pass backend validation)
       // Append custom issue type to description
       const customIssueNote = `\n\n[Custom Issue Type: ${customIssueType.trim()}]`;
       finalData.description = (formData.description || '') + customIssueNote;
-      finalData.issue_type = 'other'; // Keep as 'other' enum value
+      finalData.issue_type = 'Other'; // Keep as 'Other' label
     }
     
     // If expected output is "Other" and custom value is provided
@@ -176,7 +176,7 @@ export default function CreateTicketPage() {
               onChange={(e) => {
                 const value = e.target.value as IssueType || undefined;
                 setFormData({ ...formData, issue_type: value });
-                if (value !== 'other') {
+                if (value !== 'Other') {
                   setCustomIssueType('');
                 }
               }}
@@ -190,7 +190,7 @@ export default function CreateTicketPage() {
               ))}
             </select>
             
-            {formData.issue_type === 'other' && (
+            {formData.issue_type === 'Other' && (
               <div className="mt-3 animate-slide-in-right">
                 <input
                   type="text"
