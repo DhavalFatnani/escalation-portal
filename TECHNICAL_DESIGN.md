@@ -86,7 +86,7 @@ ticket_number           text UNIQUE NOT NULL  -- 'GROW-20251008-0001'
 created_by              uuid REFERENCES users(id)
 brand_name              text NOT NULL
 description             text
-issue_type              text  -- enum: product_not_as_listed, etc.
+issue_type              text  -- enum: product_not_as_listed (Product Not Live After Return), giant_discrepancy_brandless_inverterless (GRN Discrepancy), physical_vs_scale_mismatch (Physical Product vs SKU Mismatch), other
 expected_output         text
 priority                text NOT NULL  -- urgent | high | medium | low
 status                  text DEFAULT 'open'  -- open | processed | resolved | re-opened | closed

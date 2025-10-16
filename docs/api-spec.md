@@ -297,10 +297,10 @@ Get activity timeline for a ticket.
 - `low`
 
 ### Issue Types
-- `product_not_as_listed`
-- `giant_discrepancy_brandless_inverterless`
-- `physical_vs_scale_mismatch`
-- `other`
+- `product_not_as_listed` - "Product Not Live After Return"
+- `giant_discrepancy_brandless_inverterless` - "GRN Discrepancy"
+- `physical_vs_scale_mismatch` - "Physical Product vs SKU Mismatch"
+- `other` - "Other" (custom issue type can be specified in description)
 
 ## Error Responses
 

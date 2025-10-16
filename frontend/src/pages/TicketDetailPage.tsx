@@ -9,6 +9,7 @@ import { ArrowLeft, Clock, User, AlertCircle, File, Download, Trash2, Paperclip,
 import { TicketStatus } from '../types';
 import FileUpload from '../components/FileUpload';
 import FilePreviewModal from '../components/FilePreviewModal';
+import { getIssueTypeLabel } from '../utils/issueTypeLabels';
 
 export default function TicketDetailPage() {
   const { ticketNumber } = useParams<{ ticketNumber: string }>();
@@ -533,7 +534,7 @@ export default function TicketDetailPage() {
                 <div className="mb-3">
                   <span className="text-sm text-gray-600">Issue Type: </span>
                   <span className="text-sm text-gray-900 font-medium">
-                    {ticket.issue_type.replace(/_/g, ' ')}
+                    {getIssueTypeLabel(ticket.issue_type)}
                   </span>
                 </div>
               )}

@@ -6,6 +6,7 @@ import { CreateTicketDTO, IssueType, TicketPriority } from '../types';
 import { AlertCircle, ArrowLeft, Check, Sparkles, FileText, AlertTriangle } from 'lucide-react';
 import FileUpload from '../components/FileUpload';
 import { useAuthStore } from '../stores/authStore';
+import { issueTypes } from '../utils/issueTypeLabels';
 
 export default function CreateTicketPage() {
   const navigate = useNavigate();
@@ -75,13 +76,6 @@ export default function CreateTicketPage() {
 
     createMutation.mutate(finalData);
   };
-
-  const issueTypes: { value: IssueType; label: string }[] = [
-    { value: 'product_not_as_listed', label: 'Product Not Live After Return' },
-    { value: 'giant_discrepancy_brandless_inverterless', label: 'GRN Discrepancy' },
-    { value: 'physical_vs_scale_mismatch', label: 'Physical Product vs SKU Mismatch' },
-    { value: 'other', label: 'Other' },
-  ];
 
   const expectedOutputOptions = [
     'SKU Level sheet (with Reason for not Live or went Live)',

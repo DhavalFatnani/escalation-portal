@@ -183,7 +183,11 @@ id (uuid), ticket_id, actor_id, action, comment, payload, created_at
 **Roles:** `growth`, `ops`, `admin`  
 **Status:** `open`, `processed`, `resolved`, `re-opened`, `closed`  
 **Priority:** `urgent`, `high`, `medium`, `low`  
-**Issue Types:** `product_not_as_listed`, `giant_discrepancy_brandless_inverterless`, `physical_vs_scale_mismatch`, `other`
+**Issue Types:**
+- `product_not_as_listed` - "Product Not Live After Return"
+- `giant_discrepancy_brandless_inverterless` - "GRN Discrepancy"
+- `physical_vs_scale_mismatch` - "Physical Product vs SKU Mismatch"
+- `other` - "Other"
 
 ### Key Functions
 ```sql
