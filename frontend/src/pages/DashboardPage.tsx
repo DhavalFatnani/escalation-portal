@@ -8,24 +8,25 @@ import { useAuthStore } from '../stores/authStore';
 export default function DashboardPage() {
   const { user } = useAuthStore();
   
+  // Limit queries to reduce bandwidth (free tier optimization)
   const { data: openTickets } = useQuery({
-    queryKey: ['tickets', 'open'],
-    queryFn: () => ticketService.getTickets({ status: ['open'] }),
+    queryKey: ['tickets', 'open', { limit: 5 }],
+    queryFn: () => ticketService.getTickets({ status: ['open'], limit: 5 }),
   });
 
   const { data: processedTickets } = useQuery({
-    queryKey: ['tickets', 'processed'],
-    queryFn: () => ticketService.getTickets({ status: ['processed'] }),
+    queryKey: ['tickets', 'processed', { limit: 5 }],
+    queryFn: () => ticketService.getTickets({ status: ['processed'], limit: 5 }),
   });
 
   const { data: reopenedTickets } = useQuery({
-    queryKey: ['tickets', 'reopened'],
-    queryFn: () => ticketService.getTickets({ status: ['re-opened'] }),
+    queryKey: ['tickets', 'reopened', { limit: 5 }],
+    queryFn: () => ticketService.getTickets({ status: ['re-opened'], limit: 5 }),
   });
 
   const { data: recentTickets } = useQuery({
-    queryKey: ['tickets', 'recent'],
-    queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'] }),
+    queryKey: ['tickets', 'recent', { limit: 10 }],
+    queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'], limit: 10 }),
   });
 
   const stats = [

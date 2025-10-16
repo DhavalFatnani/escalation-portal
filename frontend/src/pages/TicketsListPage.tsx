@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ticketService } from '../services/ticketService';
-import { Search, Filter, Ticket as TicketIcon, ArrowRight, X, Sparkles } from 'lucide-react';
+import { Search, Filter, Ticket as TicketIcon, ArrowRight, X, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TicketStatus, TicketPriority } from '../types';
 import { useAuthStore } from '../stores/authStore';
 
@@ -12,6 +12,8 @@ export default function TicketsListPage() {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [includeResolved, setIncludeResolved] = useState(searchParams.get('includeResolved') === 'true');
   const [teamFilter, setTeamFilter] = useState<'all' | 'created' | 'assigned'>('all');
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 15; // Reduced from default for free tier
   
   const statusFilter = searchParams.get('status')?.split(',') as TicketStatus[] | undefined;
   const priorityFilter = searchParams.get('priority')?.split(',') as TicketPriority[] | undefined;
@@ -31,11 +33,13 @@ export default function TicketsListPage() {
   })();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['tickets', effectiveStatusFilter, priorityFilter, search],
+    queryKey: ['tickets', effectiveStatusFilter, priorityFilter, search, page, ITEMS_PER_PAGE],
     queryFn: () => ticketService.getTickets({
       status: effectiveStatusFilter,
       priority: priorityFilter,
       search,
+      limit: ITEMS_PER_PAGE,
+      offset: (page - 1) * ITEMS_PER_PAGE,
     }),
   });
 
@@ -55,6 +59,7 @@ export default function TicketsListPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setPage(1); // Reset to first page on new search
     const params = new URLSearchParams(searchParams);
     if (search) {
       params.set('search', search);
@@ -65,6 +70,7 @@ export default function TicketsListPage() {
   };
 
   const toggleFilter = (type: 'status' | 'priority', value: string) => {
+    setPage(1); // Reset to first page on filter change
     const params = new URLSearchParams(searchParams);
     const current = params.get(type)?.split(',').filter(Boolean) || [];
     
@@ -359,6 +365,67 @@ export default function TicketsListPage() {
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!isLoading && data && data.totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="text-sm text-gray-600">
+              Showing <span className="font-semibold">{((page - 1) * ITEMS_PER_PAGE) + 1}</span> to{' '}
+              <span className="font-semibold">{Math.min(page * ITEMS_PER_PAGE, data.total)}</span> of{' '}
+              <span className="font-semibold">{data.total}</span> tickets
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Previous
+              </button>
+              
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
+                  // Show first page, current page, and last page with ellipsis
+                  let pageNum;
+                  if (data.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= data.totalPages - 2) {
+                    pageNum = data.totalPages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-3 py-2 text-sm font-medium rounded-md ${
+                        page === pageNum
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
+                disabled={page === data.totalPages}
+                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            </div>
           </div>
         )}
       </div>

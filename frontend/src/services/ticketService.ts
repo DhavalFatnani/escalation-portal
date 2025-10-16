@@ -7,7 +7,14 @@ export const ticketService = {
     return response.data;
   },
 
-  async getTickets(filters?: TicketFilters): Promise<{ tickets: Ticket[]; total: number }> {
+  async getTickets(filters?: TicketFilters): Promise<{ 
+    tickets: Ticket[]; 
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasMore: boolean;
+  }> {
     const params = new URLSearchParams();
     
     if (filters?.status) {
@@ -21,6 +28,12 @@ export const ticketService = {
     }
     if (filters?.search) {
       params.append('search', filters.search);
+    }
+    if (filters?.limit) {
+      params.append('limit', filters.limit.toString());
+    }
+    if (filters?.offset) {
+      params.append('offset', filters.offset.toString());
     }
 
     const response = await api.get(`/tickets?${params.toString()}`);

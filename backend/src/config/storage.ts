@@ -77,12 +77,13 @@ export async function uploadFileToStorage(
     const filename = `${timestamp}-${Math.random().toString(36).substring(7)}${ext}`;
     const filePath = `uploads/${filename}`;
 
-    // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    // Upload to Supabase Storage with long cache (free tier optimization)
+    // Attachments are immutable, so we can cache them for a long time
+    const { data, error} = await supabase.storage
       .from(bucket)
       .upload(filePath, file.buffer, {
         contentType: file.mimetype,
-        cacheControl: '3600',
+        cacheControl: 'public, max-age=31536000, immutable', // 1 year cache
         upsert: false,
       });
 

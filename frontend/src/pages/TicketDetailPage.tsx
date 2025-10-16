@@ -32,6 +32,7 @@ export default function TicketDetailPage() {
   const [otpCode, setOtpCode] = useState('');
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showAdminStatusModal, setShowAdminStatusModal] = useState(false);
+  const [showAttachments, setShowAttachments] = useState(false); // Lazy load attachments
   
   // Modal system
   const { modalState, hideModal, showSuccess, showError, showDelete } = useModal();
@@ -48,10 +49,11 @@ export default function TicketDetailPage() {
     enabled: !!ticketNumber,
   });
 
-  const { data: attachmentsData } = useQuery({
+  // Lazy load attachments only when requested (bandwidth optimization)
+  const { data: attachmentsData, isLoading: attachmentsLoading } = useQuery({
     queryKey: ['ticket-attachments', ticketNumber],
     queryFn: () => attachmentService.getAttachments(ticketNumber!),
-    enabled: !!ticketNumber,
+    enabled: !!ticketNumber && showAttachments,
   });
 
   const resolveMutation = useMutation({
@@ -564,17 +566,42 @@ export default function TicketDetailPage() {
                 </div>
               )}
 
-              {/* Initial Files */}
-              {initial.length > 0 && (
+              {/* Attachments Section - Lazy Loading */}
+              {!showAttachments ? (
                 <div className="mt-6 pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                  <button
+                    onClick={() => setShowAttachments(true)}
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+                  >
                     <Paperclip className="w-4 h-4 mr-2" />
-                    Attached Files ({initial.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {initial.map(renderAttachment)}
+                    Show Attachments
+                  </button>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Click to load attachments (reduces bandwidth usage)
+                  </p>
+                </div>
+              ) : attachmentsLoading ? (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-600 mr-2"></div>
+                    Loading attachments...
                   </div>
                 </div>
+              ) : (
+                <>
+                  {/* Initial Files */}
+                  {initial.length > 0 && (
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                        <Paperclip className="w-4 h-4 mr-2" />
+                        Attached Files ({initial.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {initial.map(renderAttachment)}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

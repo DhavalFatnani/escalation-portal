@@ -78,4 +78,6 @@ export interface TicketFilters {
   priority?: TicketPriority[];
   brand_name?: string;
   search?: string;
+  limit?: number;
+  offset?: number;
 }

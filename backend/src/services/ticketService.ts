@@ -75,7 +75,14 @@ export class TicketService {
     }
   }
 
-  async getTickets(filters: TicketFilters, userId?: string, userRole?: string): Promise<{ tickets: Ticket[]; total: number }> {
+  async getTickets(filters: TicketFilters, userId?: string, userRole?: string): Promise<{ 
+    tickets: Ticket[]; 
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasMore: boolean;
+  }> {
     let whereClause = '1=1';
     const params: any[] = [];
     let paramCount = 0;
@@ -140,9 +147,12 @@ export class TicketService {
     );
     const total = parseInt(countResult.rows[0].total);
 
-    // Get tickets
-    const limit = filters.limit || 50;
+    // Pagination (default to 25 per page for free tier optimization)
+    const limit = filters.limit || 25;
     const offset = filters.offset || 0;
+    const page = Math.floor(offset / limit) + 1;
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = offset + limit < total;
 
     const ticketsResult = await query(
       `SELECT t.*, 
@@ -169,6 +179,10 @@ export class TicketService {
     return {
       tickets: ticketsResult.rows,
       total,
+      page,
+      limit,
+      totalPages,
+      hasMore,
     };
   }
 
