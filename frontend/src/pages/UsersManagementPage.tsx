@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { userService } from '../services/userService';
-import { Plus, Trash2, AlertCircle, Copy, Check, Users, Shield, Mail, UserCircle, Clock } from 'lucide-react';
+import { adminService } from '../services/adminService';
+import { Plus, Trash2, AlertCircle, Copy, Check, Users, Shield, Mail, UserCircle, Clock, Crown } from 'lucide-react';
 import { useModal } from '../hooks/useModal';
 import Modal from '../components/Modal';
 
@@ -64,6 +65,18 @@ export default function UsersManagementPage() {
       const errorMessage = err.response?.data?.error || 'Failed to delete user';
       const errorDetails = err.response?.data?.details || '';
       showError('Delete Failed', `${errorMessage}\n\n${errorDetails}`);
+    },
+  });
+
+  const toggleManagerMutation = useMutation({
+    mutationFn: ({ userId, isManager }: { userId: string; isManager: boolean }) =>
+      adminService.toggleManagerStatus(userId, isManager),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showSuccess('Manager Status Updated', data.message);
+    },
+    onError: (err: any) => {
+      showError('Update Failed', err.response?.data?.error || 'Failed to update manager status');
     },
   });
 
@@ -174,7 +187,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {adminUsers.map((u: any, index: number) => (
-                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} />
+                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} toggleManager={toggleManagerMutation.mutate} />
                 ))}
               </div>
             </div>
@@ -199,7 +212,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {growthUsers.map((u: any, index: number) => (
-                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} />
+                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} toggleManager={toggleManagerMutation.mutate} />
                 ))}
               </div>
             </div>
@@ -224,7 +237,7 @@ export default function UsersManagementPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {opsUsers.map((u: any, index: number) => (
-                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} />
+                  <UserCard key={u.id} user={u} currentUser={user} getRoleBadgeStyle={getRoleBadgeStyle} index={index} showDeleteConfirm={handleShowDeleteConfirm} toggleManager={toggleManagerMutation.mutate} />
                 ))}
               </div>
             </div>
@@ -410,9 +423,10 @@ interface UserCardProps {
   getRoleBadgeStyle: (role: string) => string;
   index: number;
   showDeleteConfirm: (userId: string, userName: string) => void;
+  toggleManager: (params: { userId: string; isManager: boolean }) => void;
 }
 
-function UserCard({ user: u, currentUser, getRoleBadgeStyle, index, showDeleteConfirm }: UserCardProps) {
+function UserCard({ user: u, currentUser, getRoleBadgeStyle, index, showDeleteConfirm, toggleManager }: UserCardProps) {
   return (
     <div 
       className="card-modern group hover:-translate-y-2 animate-slide-in-right"
@@ -449,6 +463,25 @@ function UserCard({ user: u, currentUser, getRoleBadgeStyle, index, showDeleteCo
             {u.role.toUpperCase()}
           </span>
         </div>
+
+        {u.role !== 'admin' && (
+          <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
+            <span className="text-xs font-semibold text-gray-600 uppercase flex items-center">
+              <Crown className="w-3 h-3 mr-1" />
+              Manager Status
+            </span>
+            <button
+              onClick={() => toggleManager({ userId: u.id, isManager: !u.is_manager })}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                u.is_manager
+                  ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+            >
+              {u.is_manager ? 'Manager' : 'Team Member'}
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
           <span className="text-xs font-semibold text-gray-600 uppercase flex items-center">

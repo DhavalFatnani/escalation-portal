@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
+import { managerService } from '../services/managerService';
 import { Link } from 'react-router-dom';
 import { Ticket, AlertCircle, Clock, Plus, TrendingUp, ArrowRight } from 'lucide-react';
 import { TicketStatus } from '../types';
@@ -8,28 +9,83 @@ import { useAuthStore } from '../stores/authStore';
 export default function DashboardPage() {
   const { user } = useAuthStore();
   
-  // Limit queries to reduce bandwidth (free tier optimization)
+  // For managers, use manager-specific data to show consistent information
+  const isManager = user?.is_manager || user?.role === 'admin';
+  
+  // Manager Dashboard Data (consistent with Manager Dashboard)
+  const { data: managerMetrics } = useQuery({
+    queryKey: ['team-metrics'],
+    queryFn: () => managerService.getTeamMetrics(),
+    enabled: isManager,
+    refetchInterval: 30000,
+  });
+
+  // Regular Dashboard Data (for non-managers)
   const { data: openTickets } = useQuery({
     queryKey: ['tickets', 'open', { limit: 5 }],
     queryFn: () => ticketService.getTickets({ status: ['open'], limit: 5 }),
+    enabled: !isManager,
+    refetchInterval: 30000,
   });
 
   const { data: processedTickets } = useQuery({
     queryKey: ['tickets', 'processed', { limit: 5 }],
     queryFn: () => ticketService.getTickets({ status: ['processed'], limit: 5 }),
+    enabled: !isManager,
+    refetchInterval: 30000,
   });
 
   const { data: reopenedTickets } = useQuery({
     queryKey: ['tickets', 'reopened', { limit: 5 }],
     queryFn: () => ticketService.getTickets({ status: ['re-opened'], limit: 5 }),
+    enabled: !isManager,
+    refetchInterval: 30000,
   });
 
   const { data: recentTickets } = useQuery({
     queryKey: ['tickets', 'recent', { limit: 10 }],
     queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'], limit: 10 }),
+    refetchInterval: 30000,
   });
 
-  const stats = [
+  // For managers, get team-specific recent tickets
+  const { data: managerRecentTickets } = useQuery({
+    queryKey: ['manager-recent-tickets', { limit: 10 }],
+    queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'], limit: 10 }),
+    enabled: isManager,
+    refetchInterval: 30000,
+  });
+
+  // Use appropriate recent tickets data
+  const displayRecentTickets = isManager ? managerRecentTickets : recentTickets;
+
+  // Use manager metrics if available, otherwise use regular ticket counts
+  const stats = isManager && managerMetrics ? [
+    {
+      name: 'Team Tickets',
+      value: managerMetrics.open_tickets,
+      icon: Ticket,
+      gradient: 'from-blue-500 to-cyan-500',
+      link: '/tickets?status=open',
+      description: 'Created by your team',
+    },
+    {
+      name: 'In Progress',
+      value: managerMetrics.processed_tickets,
+      icon: Clock,
+      gradient: 'from-yellow-500 to-orange-500',
+      link: '/tickets?status=processed',
+      description: 'Being processed',
+    },
+    {
+      name: 'Reopened',
+      value: managerMetrics.reopen_rate > 0 ? Math.round(managerMetrics.reopen_rate) : 0,
+      icon: AlertCircle,
+      gradient: 'from-red-500 to-pink-500',
+      link: '/tickets?status=re-opened',
+      description: 'Requires attention',
+    },
+  ] : [
     {
       name: 'Open Tickets',
       value: openTickets?.total || 0,
@@ -83,10 +139,11 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gradient mb-1">
-            Dashboard
+            {isManager ? 'Manager Dashboard' : 'Dashboard'}
           </h1>
           <p className="text-sm text-gray-600">
             Welcome back, <span className="font-semibold text-gray-900">{user?.name || user?.email}</span> 👋
+            {isManager && <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">Manager</span>}
           </p>
         </div>
         
@@ -140,7 +197,9 @@ export default function DashboardPage() {
               Recent Tickets
               <TrendingUp className="w-6 h-6 ml-2 text-indigo-600" />
             </h2>
-            <p className="text-sm text-gray-500 mt-1">Latest updates across all tickets</p>
+            <p className="text-sm text-gray-500 mt-1">
+              {isManager ? 'Tickets created by your team members' : 'Latest updates across all tickets'}
+            </p>
           </div>
           <Link
             to="/tickets"
@@ -152,7 +211,7 @@ export default function DashboardPage() {
         </div>
         
         <div className="space-y-3">
-          {recentTickets?.tickets.slice(0, 10).map((ticket, index) => (
+          {displayRecentTickets?.tickets.slice(0, 10).map((ticket, index) => (
             <Link
               key={ticket.id}
               to={`/tickets/${ticket.ticket_number}`}
@@ -189,7 +248,7 @@ export default function DashboardPage() {
             </Link>
           ))}
 
-          {(!recentTickets?.tickets || recentTickets.tickets.length === 0) && (
+          {(!displayRecentTickets?.tickets || displayRecentTickets.tickets.length === 0) && (
             <div className="py-16 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
                 <Ticket className="w-8 h-8 text-gray-400" />

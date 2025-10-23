@@ -15,14 +15,14 @@ export default function TicketsListPage() {
   const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 15; // Reduced from default for free tier
   
-  const statusFilter = searchParams.get('status')?.split(',') as TicketStatus[] | undefined;
-  const priorityFilter = searchParams.get('priority')?.split(',') as TicketPriority[] | undefined;
+  const statusFilter = searchParams.get('status') as TicketStatus | undefined;
+  const priorityFilter = searchParams.get('priority') as TicketPriority | undefined;
 
   // Build status filter: exclude resolved/closed by default unless includeResolved is true
   const effectiveStatusFilter = (() => {
-    if (statusFilter && statusFilter.length > 0) {
-      // User has manually selected specific statuses
-      return statusFilter;
+    if (statusFilter) {
+      // User has manually selected a specific status
+      return [statusFilter];
     }
     if (!includeResolved) {
       // Default: exclude resolved and closed
@@ -36,23 +36,38 @@ export default function TicketsListPage() {
     queryKey: ['tickets', effectiveStatusFilter, priorityFilter, search, page, ITEMS_PER_PAGE],
     queryFn: () => ticketService.getTickets({
       status: effectiveStatusFilter,
-      priority: priorityFilter,
+      priority: priorityFilter ? [priorityFilter] : undefined,
       search,
       limit: ITEMS_PER_PAGE,
       offset: (page - 1) * ITEMS_PER_PAGE,
     }),
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
-  // Filter tickets based on team filter
+  // Filter tickets based on team filter - Updated for manager workflow
   const filteredTickets = data?.tickets?.filter(ticket => {
     if (teamFilter === 'all') return true;
-    if (teamFilter === 'created') {
-      // Show tickets created by my team
-      return ticket.creator_role === user?.role;
-    }
-    if (teamFilter === 'assigned') {
-      // Show tickets assigned to my team (created by the other team)
-      return ticket.creator_role !== user?.role && ticket.creator_role !== 'admin';
+    
+    // For managers, show tickets based on assignment
+    if (user?.is_manager || user?.role === 'admin') {
+      if (teamFilter === 'created') {
+        // Show tickets created by my team members
+        return ticket.creator_role === user?.role;
+      }
+      if (teamFilter === 'assigned') {
+        // Show tickets assigned to my team members
+        return ticket.assigned_to_name && ticket.creator_role !== user?.role;
+      }
+    } else {
+      // For team members, show their assigned tickets
+      if (teamFilter === 'created') {
+        // Show tickets they created
+        return ticket.created_by === user?.id;
+      }
+      if (teamFilter === 'assigned') {
+        // Show tickets assigned to them
+        return ticket.assigned_to === user?.id;
+      }
     }
     return true;
   }) || [];
@@ -72,17 +87,13 @@ export default function TicketsListPage() {
   const toggleFilter = (type: 'status' | 'priority', value: string) => {
     setPage(1); // Reset to first page on filter change
     const params = new URLSearchParams(searchParams);
-    const current = params.get(type)?.split(',').filter(Boolean) || [];
     
-    if (current.includes(value)) {
-      const updated = current.filter((v) => v !== value);
-      if (updated.length > 0) {
-        params.set(type, updated.join(','));
-      } else {
-        params.delete(type);
-      }
+    // Single selection: if clicking the same value, deselect it
+    const current = params.get(type);
+    if (current === value) {
+      params.delete(type);
     } else {
-      params.set(type, [...current, value].join(','));
+      params.set(type, value);
     }
     
     setSearchParams(params);
@@ -175,7 +186,7 @@ export default function TicketsListPage() {
                   key={status}
                   onClick={() => toggleFilter('status', status)}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 ${
-                    statusFilter?.includes(status)
+                    statusFilter === status
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -198,7 +209,7 @@ export default function TicketsListPage() {
                   key={priority}
                   onClick={() => toggleFilter('priority', priority)}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 transform hover:scale-105 capitalize ${
-                    priorityFilter?.includes(priority)
+                    priorityFilter === priority
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -236,7 +247,7 @@ export default function TicketsListPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                My Team Created
+                {user?.is_manager || user?.role === 'admin' ? 'My Team Created' : 'I Created'}
               </button>
               <button
                 onClick={() => setTeamFilter('assigned')}
@@ -246,7 +257,7 @@ export default function TicketsListPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                Assigned to My Team
+                {user?.is_manager || user?.role === 'admin' ? 'Assigned to My Team' : 'Assigned to Me'}
               </button>
             </div>
           </div>
@@ -334,12 +345,17 @@ export default function TicketsListPage() {
                         <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
                         {ticket.creator_name || ticket.creator_email}
                       </span>
-                      {ticket.assignee_name && (
-                        <span className="flex items-center bg-white px-3 py-1 rounded-full">
+                      {ticket.assigned_to_name ? (
+                        <span className="flex items-center bg-green-50 px-3 py-1 rounded-full text-green-700 font-medium">
                           <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          Assigned to {ticket.assignee_name}
+                          Assigned to {ticket.assigned_to_name}
                         </span>
-                      )}
+                      ) : (user?.is_manager || user?.role === 'admin') ? (
+                        <span className="flex items-center bg-orange-50 px-3 py-1 rounded-full text-orange-700 font-medium">
+                          <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                          Unassigned
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <div className="ml-4 flex flex-col items-end">
@@ -360,8 +376,13 @@ export default function TicketsListPage() {
                 <p className="text-gray-500 font-medium mb-2">No tickets found</p>
                 <p className="text-sm text-gray-400">
                   {teamFilter !== 'all' 
-                    ? 'No tickets match your team filter. Try selecting "All Tickets"'
-                    : 'Try adjusting your filters or search query'}
+                    ? (user?.is_manager || user?.role === 'admin')
+                      ? 'No tickets match your team filter. Try selecting "All Tickets" to see all tickets assigned to your team.'
+                      : 'No tickets match your team filter. Try selecting "All Tickets"'
+                    : (user?.is_manager || user?.role === 'admin')
+                      ? 'No tickets are currently assigned to your team members.'
+                      : 'No tickets are currently assigned to you.'
+                  }
                 </p>
               </div>
             )}

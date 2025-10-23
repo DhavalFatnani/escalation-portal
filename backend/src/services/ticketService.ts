@@ -36,11 +36,11 @@ export class TicketService {
       );
       const ticketNumber = ticketNumberResult.rows[0].ticket_number;
 
-      // Insert ticket (issue_type is now already a label)
+      // Insert ticket (issue_type is now already a label, assigned_to is null pending manager assignment)
       const ticketResult = await client.query(
         `INSERT INTO tickets 
-        (ticket_number, created_by, brand_name, description, issue_type, expected_output, priority, status, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', now(), now())
+        (ticket_number, created_by, brand_name, description, issue_type, expected_output, priority, status, assigned_to, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, 'open', NULL, now(), now())
         RETURNING *`,
         [
           ticketNumber,
@@ -59,7 +59,7 @@ export class TicketService {
       await client.query(
         `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
          VALUES ($1, $2, 'created', $3, now())`,
-        [ticket.id, userId, `Ticket created by ${userRole} team`]
+        [ticket.id, userId, `Ticket created by ${userRole} team - Pending manager assignment`]
       );
 
       await client.query('COMMIT');
@@ -87,17 +87,44 @@ export class TicketService {
     const params: any[] = [];
     let paramCount = 0;
 
-    // Role-based filtering for bidirectional workflow:
-    // Growth users see:
-    //   - Tickets created by Growth team (their escalations to Ops)
-    //   - Tickets created by Ops team (Ops escalations to them)
-    // Ops users see:
-    //   - Tickets created by Ops team (their escalations to Growth)
-    //   - Tickets created by Growth team (Growth escalations to them)
+    // Role-based filtering for manager workflow:
+    // Team members see tickets assigned to them OR created by them (unless specific filter is provided)
+    // Managers see tickets assigned to their team members
     // Admin sees all tickets
     if (userRole === 'growth' || userRole === 'ops') {
-      // See all tickets - both teams can see all tickets in this bidirectional system
-      // No filtering needed as both teams need visibility of all escalations
+      // Get user info to check if they're a manager
+      const userResult = await query(
+        'SELECT is_manager FROM users WHERE id = $1',
+        [userId]
+      );
+      
+      if (userResult.rows.length > 0) {
+        const isManager = userResult.rows[0].is_manager;
+        
+        if (isManager) {
+          // Manager: see tickets assigned to their team members OR created by the manager themselves
+          if (!filters.created_by && !filters.assigned_to) {
+            whereClause += ` AND (
+              EXISTS (
+                SELECT 1 FROM users u2 
+                WHERE u2.id = t.assigned_to 
+                AND u2.role = $${++paramCount}
+                AND u2.managed_by = $${++paramCount}
+              )
+              OR t.created_by = $${++paramCount}
+            )`;
+            params.push(userRole, userId, userId);
+          }
+          // If there's a specific filter, let it through (handled later in the function)
+        } else {
+          // Team member: see tickets assigned to them OR created by them (if no specific created_by filter)
+          if (!filters.created_by && !filters.assigned_to) {
+            whereClause += ` AND (t.assigned_to = $${++paramCount} OR t.created_by = $${++paramCount})`;
+            params.push(userId, userId);
+          }
+          // If there's a specific filter, let it through (handled later in the function)
+        }
+      }
     }
 
     if (filters.status && filters.status.length > 0) {
@@ -120,6 +147,11 @@ export class TicketService {
       params.push(filters.created_by);
     }
 
+    if (filters.assigned_to) {
+      whereClause += ` AND t.assigned_to = $${++paramCount}`;
+      params.push(filters.assigned_to);
+    }
+
     if (filters.current_assignee) {
       whereClause += ` AND t.current_assignee = $${++paramCount}`;
       params.push(filters.current_assignee);
@@ -140,6 +172,41 @@ export class TicketService {
       params.push(filters.search);
     }
 
+    // New manager-specific filters
+    if (filters.created_by_team) {
+      whereClause += ` AND EXISTS (
+        SELECT 1 FROM users u 
+        WHERE u.id = t.created_by 
+        AND u.role = $${++paramCount}
+        AND u.managed_by = $${++paramCount}
+      )`;
+      params.push(filters.created_by_team, userId);
+    }
+
+    if (filters.assigned_to_team) {
+      whereClause += ` AND EXISTS (
+        SELECT 1 FROM users u 
+        WHERE u.id = t.assigned_to 
+        AND u.role = $${++paramCount}
+        AND u.managed_by = $${++paramCount}
+      )`;
+      params.push(filters.assigned_to_team, userId);
+    }
+
+    if (filters.unassigned_for_team) {
+      whereClause += ` AND t.assigned_to IS NULL AND EXISTS (
+        SELECT 1 FROM users u 
+        WHERE u.id = t.created_by 
+        AND u.role = $${++paramCount}
+      )`;
+      params.push(filters.unassigned_for_team);
+    }
+
+    // Debug logging for troubleshooting
+    logger.info(`getTickets query - User: ${userId}, Role: ${userRole}, Filters: ${JSON.stringify(filters)}`);
+    logger.info(`getTickets WHERE clause: ${whereClause}`);
+    logger.info(`getTickets params: ${JSON.stringify(params)}`);
+
     // Count total
     const countResult = await query(
       `SELECT COUNT(*) as total FROM tickets t WHERE ${whereClause}`,
@@ -159,10 +226,12 @@ export class TicketService {
         u.name as creator_name, 
         u.email as creator_email,
         u.role as creator_role,
-        a.name as assignee_name
+        a.name as assignee_name,
+        at.name as assigned_to_name
        FROM tickets t
        LEFT JOIN users u ON t.created_by = u.id
        LEFT JOIN users a ON t.current_assignee = a.id
+       LEFT JOIN users at ON t.assigned_to = at.id
        WHERE ${whereClause}
        ORDER BY 
          CASE t.priority 
@@ -192,10 +261,12 @@ export class TicketService {
         u.name as creator_name, 
         u.email as creator_email,
         u.role as creator_role,
-        a.name as assignee_name
+        a.name as assignee_name,
+        at.name as assigned_to_name
        FROM tickets t
        LEFT JOIN users u ON t.created_by = u.id
        LEFT JOIN users a ON t.current_assignee = a.id
+       LEFT JOIN users at ON t.assigned_to = at.id
        WHERE t.ticket_number = $1`,
       [ticketNumber]
     );
@@ -454,6 +525,94 @@ export class TicketService {
     );
 
     return result.rows;
+  }
+
+  async assignTicket(ticketNumber: string, assignedTo: string, assignedBy: string, notes?: string): Promise<Ticket> {
+    const client = await getClient();
+    
+    try {
+      await client.query('BEGIN');
+
+      const ticket = await this.getTicketByNumber(ticketNumber);
+      if (!ticket) {
+        throw new AppError('Ticket not found', 404);
+      }
+
+      // Check if this is a reassignment (ticket already has someone assigned)
+      const isReassignment = ticket.assigned_to !== null;
+      const previousAssignee = ticket.assigned_to;
+
+      // Get previous assignee name if reassigning
+      let previousAssigneeName = 'Unassigned';
+      if (isReassignment && previousAssignee) {
+        const prevUserResult = await client.query(
+          'SELECT name, email FROM users WHERE id = $1',
+          [previousAssignee]
+        );
+        if (prevUserResult.rows.length > 0) {
+          previousAssigneeName = `${prevUserResult.rows[0].name} (${prevUserResult.rows[0].email})`;
+        }
+      }
+
+      // Verify assigned user exists and is active
+      const userResult = await client.query(
+        'SELECT id, name, email, role, is_active FROM users WHERE id = $1',
+        [assignedTo]
+      );
+
+      if (userResult.rows.length === 0) {
+        throw new AppError('Assigned user not found', 404);
+      }
+
+      const assignedUser = userResult.rows[0];
+
+      if (!assignedUser.is_active) {
+        throw new AppError('Cannot assign to inactive user', 400);
+      }
+
+      // Update ticket
+      const result = await client.query(
+        `UPDATE tickets 
+         SET assigned_to = $1, 
+             updated_at = now()
+         WHERE ticket_number = $2
+         RETURNING *`,
+        [assignedTo, ticketNumber]
+      );
+
+      // Log assignment in ticket_assignments table
+      await client.query(
+        `INSERT INTO ticket_assignments (ticket_id, assigned_by, assigned_to, notes, assigned_at)
+         VALUES ($1, $2, $3, $4, now())`,
+        [ticket.id, assignedBy, assignedTo, notes || null]
+      );
+
+      // Log activity with appropriate action and comment
+      const action = isReassignment ? 'reassigned' : 'assigned';
+      const activityComment = isReassignment
+        ? (notes 
+            ? `Reassigned from ${previousAssigneeName} to ${assignedUser.name} (${assignedUser.email}). Notes: ${notes}`
+            : `Reassigned from ${previousAssigneeName} to ${assignedUser.name} (${assignedUser.email})`)
+        : (notes 
+            ? `Assigned to ${assignedUser.name} (${assignedUser.email}). Notes: ${notes}`
+            : `Assigned to ${assignedUser.name} (${assignedUser.email})`);
+
+      await client.query(
+        `INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
+         VALUES ($1, $2, $3, $4, now())`,
+        [ticket.id, assignedBy, action, activityComment]
+      );
+
+      await client.query('COMMIT');
+      logger.info(`Ticket ${ticketNumber} ${isReassignment ? 'reassigned' : 'assigned'} to ${assignedUser.email} by ${assignedBy}`);
+      
+      return result.rows[0];
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 }
 

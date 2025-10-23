@@ -41,10 +41,16 @@ api.interceptors.response.use(
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }
-    if (error.response?.status === 403 && error.response?.data?.error === 'No token provided') {
-      console.error('No authentication token - redirecting to login');
-      useAuthStore.getState().logout();
-      window.location.href = '/login';
+    if (error.response?.status === 403) {
+      if (error.response?.data?.error === 'No token provided') {
+        console.error('No authentication token - redirecting to login');
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      } else if (error.response?.data?.error?.includes('inactive')) {
+        console.error('Account is inactive - redirecting to login');
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -10,6 +10,7 @@ import userRoutes from './routes/users';
 import attachmentRoutes from './routes/attachments';
 import adminRoutes from './routes/admin';
 import healthRoutes from './routes/health';
+import managerRoutes from './routes/managers';
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use('/api/health', healthRoutes); // No auth required - for uptime monitorin
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/managers', managerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', attachmentRoutes); // Must be last - catches /api/* wildcard
 

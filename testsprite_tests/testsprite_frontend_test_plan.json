@@ -1,47 +1,55 @@
 [
   {
     "id": "TC001",
-    "title": "Successful login with valid credentials",
-    "description": "Verify that a user can log in successfully using correct email and password, and receives a valid JWT token with appropriate role claims.",
+    "title": "Successful login with valid credentials and role enforcement",
+    "description": "Verify that a user can log in with correct username and password, JWT token is issued, and role-based access control permits appropriate feature access.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to login page"
+        "description": "Navigate to the login page"
       },
       {
         "type": "action",
-        "description": "Input valid email and password for Growth user"
+        "description": "Enter valid username and password for a growth team member"
       },
       {
         "type": "action",
-        "description": "Click login button"
+        "description": "Click the login button"
       },
       {
         "type": "assertion",
-        "description": "Verify login is successful and JWT is returned including role 'Growth'"
+        "description": "Check that login is successful and JWT token is received"
       },
       {
         "type": "assertion",
-        "description": "Verify user is redirected to dashboard"
+        "description": "Verify user is directed to growth team dashboard with correct role permissions"
+      },
+      {
+        "type": "action",
+        "description": "Repeat for ops, admin, and manager roles"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm respective role-based views and access controls apply"
       }
     ]
   },
   {
     "id": "TC002",
-    "title": "Login failure with invalid credentials",
-    "description": "Verify login fails when incorrect email or password is entered and appropriate error message is shown.",
+    "title": "Login failure with invalid credentials and inactive user",
+    "description": "Verify that login is prevented with incorrect credentials and inactive user status.",
     "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to login page"
+        "description": "Navigate to the login page"
       },
       {
         "type": "action",
-        "description": "Input invalid email or password"
+        "description": "Enter invalid username and/or password"
       },
       {
         "type": "action",
@@ -49,221 +57,208 @@
       },
       {
         "type": "assertion",
-        "description": "Verify login is unsuccessful"
+        "description": "Verify login is rejected with appropriate error message"
+      },
+      {
+        "type": "action",
+        "description": "Attempt login with valid credentials of an inactive user"
       },
       {
         "type": "assertion",
-        "description": "Verify error message indicates invalid credentials"
+        "description": "Verify login is rejected due to inactive user status"
       }
     ]
   },
   {
     "id": "TC003",
-    "title": "Role-based access control enforcement for Growth user",
-    "description": "Verify Growth role cannot access Ops-only or Admin-only endpoints and UI elements are restricted appropriately.",
-    "category": "security",
+    "title": "Ticket creation with required and optional fields including file attachments",
+    "description": "Validate that members from growth and ops teams can create tickets with correct fields, automatic ticket numbering, and file attachments with compression and preview.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as Growth user and obtain JWT token"
+        "description": "Log in as growth team member"
       },
       {
         "type": "action",
-        "description": "Attempt to access Admin-only API endpoint"
+        "description": "Navigate to the create ticket page"
+      },
+      {
+        "type": "action",
+        "description": "Fill in required fields for a new ticket"
+      },
+      {
+        "type": "action",
+        "description": "Upload one or multiple valid files including images and documents"
       },
       {
         "type": "assertion",
-        "description": "Verify access is denied with 403 Forbidden"
+        "description": "Verify files are compressed client-side and preview modal is displayed correctly"
       },
       {
         "type": "action",
-        "description": "Attempt to access Ops-only API endpoint"
+        "description": "Submit the ticket"
       },
       {
         "type": "assertion",
-        "description": "Verify access is denied with 403 Forbidden"
+        "description": "Verify ticket is created with automatic ticket number"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm files are stored in Supabase with CDN caching"
       },
       {
         "type": "action",
-        "description": "Verify UI does not show Admin or Ops specific features"
+        "description": "Repeat ticket creation with ops team member"
       }
     ]
   },
   {
     "id": "TC004",
-    "title": "Role-based access control enforcement for Ops user",
-    "description": "Verify Ops role has appropriate access and cannot perform Growth or Admin privileged actions.",
-    "category": "security",
+    "title": "Ticket lifecycle status transitions and activity logging",
+    "description": "Ensure tickets follow the correct status transitions (open → processed → closed/re-opened) with full logging of all state changes.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as Ops user and obtain JWT token"
+        "description": "Create and open a new ticket as a growth user"
       },
       {
         "type": "action",
-        "description": "Attempt to create ticket as Ops user"
+        "description": "Manager assigns the ticket to an active ops user"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket is successfully created with prefix OPS in ticket number"
+        "description": "Verify ticket status changes to assigned and logged"
       },
       {
         "type": "action",
-        "description": "Attempt to access Admin-only API endpoint"
+        "description": "Assigned ops user processes the ticket by adding resolution remarks and uploading files"
       },
       {
         "type": "assertion",
-        "description": "Verify access is denied with 403 Forbidden"
+        "description": "Ensure ticket status updates to processed and all changes are logged"
       },
       {
         "type": "action",
-        "description": "Verify UI does not show Admin specific features"
+        "description": "Creator reviews processed ticket and accepts to close it"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket status updates to closed and activity is logged"
+      },
+      {
+        "type": "action",
+        "description": "Creator reopens the ticket with a required reason"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm status changes to open and reopening reason is recorded"
       }
     ]
   },
   {
     "id": "TC005",
-    "title": "Bidirectional ticket creation workflow by Growth user",
-    "description": "Verify Growth user can successfully create a new ticket with mandatory fields, optional initial file uploads, unique ticket number generation, and correct status assignment.",
-    "category": "functional",
+    "title": "Managers assign tickets only to active users with error handling",
+    "description": "Validate that managers can assign incoming tickets to active team members only, and proper error messages are shown if assigning to inactive or invalid users.",
+    "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as Growth user"
+        "description": "Log in as manager"
       },
       {
         "type": "action",
-        "description": "Navigate to New Ticket page"
+        "description": "Navigate to incoming tickets list"
       },
       {
         "type": "action",
-        "description": "Fill ticket form with brand name, description, issue type, priority"
+        "description": "Attempt to assign ticket to an active team member"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify assignment succeeds and status updates appropriately"
       },
       {
         "type": "action",
-        "description": "Upload up to 3 initial files within size limits"
+        "description": "Attempt to assign ticket to an inactive user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify assignment is rejected with appropriate error message"
       },
       {
         "type": "action",
-        "description": "Submit ticket form"
+        "description": "Attempt to assign ticket to invalid/non-existent user"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket is created with unique ticket number starting with GROW- and dated correctly"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify ticket has status 'open' and creator role recorded as Growth"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify activity log contains ticket creation entry"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify user is redirected to ticket detail page"
+        "description": "Verify assignment is rejected with appropriate error message"
       }
     ]
   },
   {
     "id": "TC006",
-    "title": "Bidirectional ticket creation workflow by Ops user",
-    "description": "Verify Ops user can create new ticket similarly with correct prefix and status.",
-    "category": "functional",
+    "title": "RBAC enforcement across user roles for key operations",
+    "description": "Verify that role-based access control enforces permissions such that users can only perform actions allowed by their roles including preventing managers from force status changes and admins performing admin tasks.",
+    "category": "security",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Login as Ops user"
+        "description": "Log in as manager"
       },
       {
         "type": "action",
-        "description": "Navigate to New Ticket page"
-      },
-      {
-        "type": "action",
-        "description": "Fill ticket form with required fields"
-      },
-      {
-        "type": "action",
-        "description": "Submit form without files"
+        "description": "Attempt to perform a force status change on a ticket"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket number starts with OPS- and is unique for date"
+        "description": "Verify access is denied and appropriate error is returned"
+      },
+      {
+        "type": "action",
+        "description": "Log in as admin"
+      },
+      {
+        "type": "action",
+        "description": "Perform force status change and user role promotions"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket status is 'open', and logged correctly"
+        "description": "Verify actions succeed with correct audit logging"
+      },
+      {
+        "type": "action",
+        "description": "Try restricted actions as growth and ops users"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm access denied on any admin/manager-only operations"
       }
     ]
   },
   {
     "id": "TC007",
-    "title": "Ticket creation validation for mandatory fields",
-    "description": "Verify ticket creation form validation blocks submission if brand name, description, issue type, or priority are missing and shows error messages.",
-    "category": "error handling",
+    "title": "File upload validation, compression, preview, and storage integration",
+    "description": "Test that file uploads respect MIME type restrictions, size limits (max 20MB per file, max 5 files), compression happens client-side, preview modal works, and files are securely stored on Supabase with CDN caching.",
+    "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Navigate to New Ticket page"
+        "description": "Navigate to the ticket creation or ticket processing page"
       },
       {
         "type": "action",
-        "description": "Attempt ticket creation leaving brand name empty"
+        "description": "Attempt to upload more than 5 files"
       },
       {
         "type": "assertion",
-        "description": "Verify submission is blocked and brand name required error is shown"
-      },
-      {
-        "type": "action",
-        "description": "Fill brand name but leave description empty"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify submission blocked with description required error"
-      },
-      {
-        "type": "action",
-        "description": "Fill all fields except issue type"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify submission blocked with issue type required error"
-      },
-      {
-        "type": "action",
-        "description": "Fill all fields except priority"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify submission blocked with priority required error"
-      }
-    ]
-  },
-  {
-    "id": "TC008",
-    "title": "File upload enforces count and size limits on initial attachment",
-    "description": "Verify file upload rejects more than 5 files or files larger than 20MB with proper error messages during ticket creation.",
-    "category": "error handling",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to New Ticket page in Growth user context"
-      },
-      {
-        "type": "action",
-        "description": "Attempt to upload 6 files, each under 20MB"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify upload is rejected and error indicates max 5 files allowed"
+        "description": "Verify upload is rejected with error about maximum file count"
       },
       {
         "type": "action",
@@ -271,548 +266,288 @@
       },
       {
         "type": "assertion",
-        "description": "Verify upload rejected with file size limit error"
+        "description": "Verify upload is rejected with error about file size"
+      },
+      {
+        "type": "action",
+        "description": "Upload supported image and document files"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify files are compressed client-side and preview modal displays correctly"
+      },
+      {
+        "type": "action",
+        "description": "Submit the ticket or update"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify files are stored on Supabase and accessible via CDN URLs"
       }
     ]
   },
   {
-    "id": "TC009",
-    "title": "Ops user adds resolution remarks and marks ticket processed",
-    "description": "Verify Ops user can add resolution remarks, upload resolution files, mark ticket as processed, and activity log is updated.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login as Ops user"
-      },
-      {
-        "type": "action",
-        "description": "Open an open ticket created by Growth user"
-      },
-      {
-        "type": "action",
-        "description": "Add mandatory resolution remarks"
-      },
-      {
-        "type": "action",
-        "description": "Upload resolution files within limits"
-      },
-      {
-        "type": "action",
-        "description": "Submit resolution"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify ticket status changes to 'processed'"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify resolution remarks saved as primary_resolution_remarks if first resolution"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify activity log records resolution action with details"
-      }
-    ]
-  },
-  {
-    "id": "TC010",
-    "title": "Growth user reopens processed ticket with reason and files",
-    "description": "Verify Growth ticket creator can reopen a processed ticket by submitting reopen reason and optional files, and ticket status updates to 're-opened'.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login as Growth user who created a processed ticket"
-      },
-      {
-        "type": "action",
-        "description": "Open ticket detail page"
-      },
-      {
-        "type": "action",
-        "description": "Click reopen ticket"
-      },
-      {
-        "type": "action",
-        "description": "Enter mandatory reopen reason"
-      },
-      {
-        "type": "action",
-        "description": "Upload reopen files within limits"
-      },
-      {
-        "type": "action",
-        "description": "Submit reopen request"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify ticket status changes to 're-opened'"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify reopen reason is saved"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify activity log contains reopen entry with details"
-      }
-    ]
-  },
-  {
-    "id": "TC011",
-    "title": "Growth user accepts and closes processed ticket",
-    "description": "Verify Growth ticket creator can accept resolution and close a processed ticket, updating ticket status and logging activity.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login as Growth user who created a processed ticket"
-      },
-      {
-        "type": "action",
-        "description": "Access ticket detail page"
-      },
-      {
-        "type": "action",
-        "description": "Choose to accept resolution and close ticket"
-      },
-      {
-        "type": "action",
-        "description": "Confirm close action"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify ticket status changes to 'closed'"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify activity log records closing action"
-      }
-    ]
-  },
-  {
-    "id": "TC012",
-    "title": "File deletion peer-approval workflow with OTP validation",
-    "description": "Verify that a user requesting file deletion submits reason, opposite team approves generating OTP, requester enters OTP, file is deleted upon successful verification, and activity logged.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "User clicks delete on a file attachment"
-      },
-      {
-        "type": "action",
-        "description": "Enter deletion reason and submit deletion request"
-      },
-      {
-        "type": "action",
-        "description": "Opposite team user views pending deletion requests"
-      },
-      {
-        "type": "action",
-        "description": "Approver reviews and approves request, triggering OTP generation"
-      },
-      {
-        "type": "action",
-        "description": "Requester receives OTP and enters it into system"
-      },
-      {
-        "type": "action",
-        "description": "Submit OTP for validation"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify OTP is validated successfully"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify file attachment is deleted"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify activity log records file deletion with details"
-      }
-    ]
-  },
-  {
-    "id": "TC013",
-    "title": "File deletion rejection and error path handling",
-    "description": "Verify approver can reject file deletion request, requester notified accordingly, and deletion not performed.",
-    "category": "error handling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "User submits file deletion request with reason"
-      },
-      {
-        "type": "action",
-        "description": "Opposite team user views and rejects deletion request"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify requester receives rejection notification"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify file remains undeleted"
-      }
-    ]
-  },
-  {
-    "id": "TC014",
-    "title": "OTP validation failure during file deletion",
-    "description": "Verify deletion fails if incorrect OTP entered or OTP expired with appropriate error messages.",
-    "category": "error handling",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Submit file deletion request and receive valid OTP"
-      },
-      {
-        "type": "action",
-        "description": "Enter incorrect OTP and submit"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify deletion denied with 'invalid OTP' message"
-      },
-      {
-        "type": "action",
-        "description": "Wait until OTP expiration time passes"
-      },
-      {
-        "type": "action",
-        "description": "Enter expired OTP and submit"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify deletion denied with 'OTP expired' message"
-      }
-    ]
-  },
-  {
-    "id": "TC015",
-    "title": "Advanced ticket search with multiple filters",
-    "description": "Verify tickets can be searched and filtered by status, priority, brand, creator, assignee, and date range with pagination support.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Navigate to ticket list page"
-      },
-      {
-        "type": "action",
-        "description": "Apply status filter to show only 'open' tickets"
-      },
-      {
-        "type": "action",
-        "description": "Apply priority filter to show only high priority"
-      },
-      {
-        "type": "action",
-        "description": "Set brand name filter"
-      },
-      {
-        "type": "action",
-        "description": "Set creator filter by Growth user"
-      },
-      {
-        "type": "action",
-        "description": "Set assignee filter by Ops user"
-      },
-      {
-        "type": "action",
-        "description": "Set date range filter for last 7 days"
-      },
-      {
-        "type": "action",
-        "description": "Navigate through pagination controls"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify filtered ticket list matches all applied criteria on each page"
-      }
-    ]
-  },
-  {
-    "id": "TC016",
-    "title": "Activity timeline chronological order and live update",
-    "description": "Verify ticket activity timeline shows all actions in chronological order with correct actor, timestamps, and comments, and updates live after ticket changes.",
-    "category": "functional",
-    "priority": "Medium",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Open ticket detail page"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify full activity timeline is displayed in chronological order"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify each activity shows actor details, timestamp and action comments"
-      },
-      {
-        "type": "action",
-        "description": "Perform update on ticket (e.g., add resolution remark)"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify activity timeline updates automatically with new action"
-      }
-    ]
-  },
-  {
-    "id": "TC017",
-    "title": "Admin user manages users and changes passwords",
-    "description": "Verify Admin has access to user management pages, can view and edit user information, reset passwords, and changes are persisted.",
-    "category": "functional",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login as Admin user"
-      },
-      {
-        "type": "action",
-        "description": "Navigate to User Management page"
-      },
-      {
-        "type": "action",
-        "description": "View list of all users"
-      },
-      {
-        "type": "action",
-        "description": "Edit user details (e.g., role change)"
-      },
-      {
-        "type": "action",
-        "description": "Initiate password change for a user"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify user data and password changes are saved and effective"
-      }
-    ]
-  },
-  {
-    "id": "TC018",
-    "title": "Input validation and error handling on ticket creation API",
-    "description": "Verify API rejects ticket creation requests missing required fields or having invalid data types with proper validation errors.",
-    "category": "error handling",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Send POST /api/tickets request with missing brand name"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify API responds with 400 Bad Request and descriptive error"
-      },
-      {
-        "type": "action",
-        "description": "Send POST /api/tickets request with invalid priority value"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify API validation error response"
-      }
-    ]
-  },
-  {
-    "id": "TC019",
-    "title": "Security test: SQL injection prevention on ticket search",
-    "description": "Verify application and API sanitize and parameterize queries to prevent SQL injection attacks via search inputs.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Submit search filter with SQL injection payload in brand name, e.g. \"'+ OR 1=1--\""
-      },
-      {
-        "type": "assertion",
-        "description": "Verify no unauthorized data is exposed and no errors occur"
-      }
-    ]
-  },
-  {
-    "id": "TC020",
-    "title": "Security test: JWT token expiration enforcement",
-    "description": "Verify JWT tokens expire properly and API denies access using expired tokens.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Login and receive JWT token"
-      },
-      {
-        "type": "action",
-        "description": "Modify system time or wait until token expiration"
-      },
-      {
-        "type": "action",
-        "description": "Call authenticated API endpoint with expired token"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify access is denied with 401 Unauthorized due to expired token"
-      }
-    ]
-  },
-  {
-    "id": "TC021",
-    "title": "Rate limiting enforcement on authentication endpoints",
-    "description": "Verify system limits number of login attempts per IP/user and blocks excessive requests with appropriate error response.",
-    "category": "security",
-    "priority": "High",
-    "steps": [
-      {
-        "type": "action",
-        "description": "Send multiple rapid login attempts with incorrect credentials exceeding rate limit threshold"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify API responds with rate limit error (429 Too Many Requests)"
-      }
-    ]
-  },
-  {
-    "id": "TC022",
-    "title": "UI responsiveness and performance under load",
-    "description": "Verify UI pages load within acceptable timeframes and remain responsive on desktop and mobile devices during normal and heavy data volumes.",
+    "id": "TC008",
+    "title": "UI components render correctly across devices and support accessibility",
+    "description": "Check that custom UI components such as modals, checkboxes with animations, sidebar navigation, and page headers render accurately on different device screen sizes with consistent colors, animations, and keyboard accessibility.",
     "category": "ui",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Access dashboard, ticket list, and ticket detail on desktop"
+        "description": "Open application on desktop, tablet, and mobile devices"
       },
       {
         "type": "assertion",
-        "description": "Verify pages load within performance requirements and UI elements respond instantly"
+        "description": "Verify sidebar navigation displays correctly and is responsive"
+      },
+      {
+        "type": "assertion",
+        "description": "Check modals open and close smoothly with animations"
+      },
+      {
+        "type": "assertion",
+        "description": "Test custom checkboxes show gradients and animations upon interactions"
       },
       {
         "type": "action",
-        "description": "Repeat steps on mobile viewport"
+        "description": "Navigate using keyboard only"
       },
       {
         "type": "assertion",
-        "description": "Verify UI adapts correctly, remains usable and performant"
-      },
-      {
-        "type": "action",
-        "description": "Load ticket list with large data set with filters and pagination"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify UI remains responsive and pagination works as expected"
+        "description": "Ensure focus indicators are visible and navigation is operational"
       }
     ]
   },
   {
-    "id": "TC023",
-    "title": "Verify security headers and CORS configuration",
-    "description": "Ensure responses include Helmet security headers and CORS policies restrict access to trusted origins only.",
-    "category": "security",
+    "id": "TC009",
+    "title": "API input validation and error message consistency",
+    "description": "Verify that all API endpoints validate inputs using Zod schemas and return consistent, meaningful error messages upon validation failures.",
+    "category": "error handling",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Send request to backend from allowed origin"
+        "description": "Send API requests with missing required fields to authentication, ticket, manager, and admin endpoints"
       },
       {
         "type": "assertion",
-        "description": "Verify CORS headers allow origin and required Helmet headers are present"
+        "description": "Verify validation errors are returned with clear messages in JSON response"
       },
       {
         "type": "action",
-        "description": "Send request from disallowed origin"
+        "description": "Send requests with invalid data types or formats"
       },
       {
         "type": "assertion",
-        "description": "Verify access is denied or blocked by CORS policy"
+        "description": "Confirm proper validation error messages and HTTP status codes"
+      },
+      {
+        "type": "action",
+        "description": "Attempt SQL injection or malformed inputs"
+      },
+      {
+        "type": "assertion",
+        "description": "Validate requests are blocked and safe error responses are returned"
       }
     ]
   },
   {
-    "id": "TC024",
-    "title": "File attachments upload context categorization verification",
-    "description": "Verify files uploaded to tickets are correctly tagged and stored according to their upload context: initial, resolution, reopening, and additional.",
+    "id": "TC010",
+    "title": "PWA features: offline fallback, install prompts, and fullscreen toggle",
+    "description": "Ensure Progressive Web App functionality works including offline fallback page loading, install prompt appears on supported devices, and fullscreen toggling operates as intended.",
     "category": "functional",
     "priority": "Medium",
     "steps": [
       {
         "type": "action",
-        "description": "Upload initial files during ticket creation"
+        "description": "Load the app in a supported browser and simulate offline mode"
       },
       {
         "type": "assertion",
-        "description": "Verify uploaded files have upload_context='initial'"
+        "description": "Verify offline fallback page loads when network is unavailable"
       },
       {
         "type": "action",
-        "description": "Upload files during resolution submission"
+        "description": "Trigger install prompt on supported device or browser"
       },
       {
         "type": "assertion",
-        "description": "Verify files have upload_context='resolution'"
+        "description": "Confirm user sees install prompt and can install the PWA"
       },
       {
         "type": "action",
-        "description": "Upload files during ticket reopen"
+        "description": "Use fullscreen toggle feature"
       },
       {
         "type": "assertion",
-        "description": "Verify files have upload_context='reopen'"
-      },
-      {
-        "type": "action",
-        "description": "Upload additional files after ticket created"
-      },
-      {
-        "type": "assertion",
-        "description": "Verify files have upload_context='additional' or appropriate designation"
+        "description": "Verify UI enters and exits fullscreen mode correctly"
       }
     ]
   },
   {
-    "id": "TC025",
-    "title": "Verify unique ticket number generation format",
-    "description": "Ensure ticket numbers are generated uniquely with correct prefix (GROW or OPS) followed by YYYYMMDD and a 4-digit counter, without collisions.",
+    "id": "TC011",
+    "title": "Manager dashboard functionality with team performance and member activation toggling",
+    "description": "Validate that managers can access dashboards showing incoming/outgoing tickets, view team performance analytics, and toggle activation status for team members with immediate effect.",
     "category": "functional",
     "priority": "High",
     "steps": [
       {
         "type": "action",
-        "description": "Create multiple tickets on the same day as Growth user"
+        "description": "Log in as manager and open the manager overview page"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket numbers start with 'GROW-' followed by current date and 4-digit incremental number"
+        "description": "Verify incoming and outgoing tickets lists display correctly with real-time updates"
       },
       {
         "type": "action",
-        "description": "Create multiple tickets on the same day as Ops user"
+        "description": "Navigate to team performance analytics page"
       },
       {
         "type": "assertion",
-        "description": "Verify ticket numbers start with 'OPS-' followed by current date and 4-digit incremental number"
+        "description": "Confirm performance metrics render correctly and data is accurate"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to team management page"
+      },
+      {
+        "type": "action",
+        "description": "Toggle activation status for a team member"
       },
       {
         "type": "assertion",
-        "description": "Verify no two tickets share the same ticket number"
+        "description": "Verify user status changes effectively and reflects in assignment operations"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Admin panel user management and system settings updates",
+    "description": "Confirm that admins can manage users including promotions/demotions, force status changes on tickets, and adjust system configuration with proper validation and audit logging.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as admin and navigate to the users management page"
+      },
+      {
+        "type": "action",
+        "description": "Promote a regular user to manager role"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify role update takes effect and user receives appropriate permissions"
+      },
+      {
+        "type": "action",
+        "description": "Perform force status change on a selected ticket"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm status change is applied and logged with admin attribution"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to system settings page and update configurations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify settings save successfully and validation prevents invalid inputs"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Real-time ticket list updates and auto-refresh functionality",
+    "description": "Test that ticket lists and dashboards refresh automatically every 15 seconds with current data to maintain real-time collaboration.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in and open ticket list page"
+      },
+      {
+        "type": "action",
+        "description": "Simulate ticket status change from another user"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ticket list auto-refreshes within 15 seconds showing updated status"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Health check endpoint responds correctly",
+    "description": "Verify backend health monitoring API endpoint returns status for uptime monitoring and prevents cold starts.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Send GET request to health check endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify response status is 200 and contains expected uptime and service info"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Security tests to prevent unauthorized access and SQL injection attempts",
+    "description": "Ensure unauthorized users cannot access protected resources and inputs vulnerable to SQL injection are sanitized or blocked.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access ticket management API without JWT token"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with 401 Unauthorized"
+      },
+      {
+        "type": "action",
+        "description": "Send API requests containing SQL injection payloads in input fields"
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm inputs are sanitized, and requests fail safely without database compromise"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Page load and API response performance under concurrent load",
+    "description": "Verify system performance goals are met: page load under 2s, API 95th percentile response under 500ms, support for at least 100 concurrent users with stable pagination and real-time updates.",
+    "category": "performance",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate 100 concurrent users accessing the application"
+      },
+      {
+        "type": "assertion",
+        "description": "Measure page load times ensuring <2 seconds"
+      },
+      {
+        "type": "assertion",
+        "description": "Monitor API response times and confirm p95 under 500ms"
+      },
+      {
+        "type": "action",
+        "description": "Test pagination and real-time ticket list updates under load"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI remains responsive and accurate"
       }
     ]
   }

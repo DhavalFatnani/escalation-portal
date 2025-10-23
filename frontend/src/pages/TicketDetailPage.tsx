@@ -10,6 +10,7 @@ import { TicketStatus } from '../types';
 import FileUpload from '../components/FileUpload';
 import FilePreviewModal from '../components/FilePreviewModal';
 import AdminStatusManager from '../components/AdminStatusManager';
+import { AssignmentModal } from '../components/AssignmentModal';
 import { getIssueTypeLabel } from '../utils/issueTypeLabels';
 import { useModal } from '../hooks/useModal';
 import Modal from '../components/Modal';
@@ -33,6 +34,7 @@ export default function TicketDetailPage() {
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [showAdminStatusModal, setShowAdminStatusModal] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false); // Lazy load attachments
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false); // Manager assignment
   
   // Modal system
   const { modalState, hideModal, showSuccess, showError, showDelete } = useModal();
@@ -41,12 +43,14 @@ export default function TicketDetailPage() {
     queryKey: ['ticket', ticketNumber],
     queryFn: () => ticketService.getTicket(ticketNumber!),
     enabled: !!ticketNumber,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
   const { data: activitiesData } = useQuery({
     queryKey: ['ticket-activities', ticketNumber],
     queryFn: () => ticketService.getActivities(ticketNumber!),
     enabled: !!ticketNumber,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
   // Lazy load attachments only when requested (bandwidth optimization)
@@ -424,9 +428,12 @@ export default function TicketDetailPage() {
     : (ticket.creator_role === 'growth' && user?.role === 'ops' && (ticket.status === 'open' || ticket.status === 're-opened')) ||
       (ticket.creator_role === 'ops' && user?.role === 'growth' && (ticket.status === 'open' || ticket.status === 're-opened'));
   
+  // Check if ticket was created by a team member for managers
+  const userCreatedByTeamMember = user?.is_manager && ticket.creator_role === user.role;
+  
   const canReopen = user?.role === 'admin'
     ? ticket.status === 'processed'
-    : user?.role === ticket.creator_role && ticket.status === 'processed';
+    : (user?.role === ticket.creator_role || userCreatedByTeamMember) && ticket.status === 'processed';
   
   const canClose = user?.role === 'admin'
     ? ticket.status === 'processed'
@@ -535,6 +542,34 @@ export default function TicketDetailPage() {
                 )}
               </div>
             </div>
+
+            {/* Assignment Section (Managers and Admins) */}
+            {(user?.is_manager || user?.role === 'admin') && (
+              <div className="border-t pt-4 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-1">Assignment</h3>
+                    {ticket.assigned_to_name ? (
+                      <p className="text-sm text-gray-900">
+                        Assigned to: <span className="font-semibold">{ticket.assigned_to_name}</span>
+                      </p>
+                    ) : (
+                      <p className="text-sm text-orange-600 font-medium">
+                        ⚠️ Not yet assigned
+                      </p>
+                    )}
+                  </div>
+                  {!ticket.assigned_to && (user?.is_manager || user?.role === 'admin') && (
+                    <button
+                      onClick={() => setShowAssignmentModal(true)}
+                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                    >
+                      Assign Ticket
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="border-t pt-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -935,6 +970,16 @@ export default function TicketDetailPage() {
                 adminStatusMutation.mutate({ status, reason });
               }}
               isChanging={adminStatusMutation.isPending}
+            />
+          )}
+
+          {/* Assignment Modal */}
+          {showAssignmentModal && (
+            <AssignmentModal
+              isOpen={showAssignmentModal}
+              onClose={() => setShowAssignmentModal(false)}
+              ticketNumber={ticket.ticket_number}
+              ticketBrand={ticket.brand_name}
             />
           )}
 

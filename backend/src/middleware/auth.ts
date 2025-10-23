@@ -25,7 +25,7 @@ export const requireAuth = async (
     const decoded = jwt.verify(token, jwtSecret) as { userId: string };
     
     const result = await query(
-      'SELECT id, email, name, role, created_at, updated_at, last_login_at FROM users WHERE id = $1',
+      'SELECT id, email, name, role, is_manager, is_active, managed_by, auto_assign_enabled, created_at, updated_at, last_login_at FROM users WHERE id = $1',
       [decoded.userId]
     );
 
@@ -33,7 +33,14 @@ export const requireAuth = async (
       return res.status(401).json({ error: 'User not found' });
     }
 
-    req.user = result.rows[0];
+    const user = result.rows[0];
+
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account is inactive. Please contact your manager.' });
+    }
+
+    req.user = user;
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
@@ -63,3 +70,18 @@ export const requireRole = (...roles: UserRole[]) => {
 export const requireGrowth = requireRole('growth', 'admin');
 export const requireOps = requireRole('ops', 'admin');
 export const requireAdmin = requireRole('admin');
+
+export const requireManager = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  if (!req.user.is_manager && req.user.role !== 'admin') {
+    return res.status(403).json({ 
+      error: 'Forbidden', 
+      message: 'Manager access required' 
+    });
+  }
+
+  next();
+};

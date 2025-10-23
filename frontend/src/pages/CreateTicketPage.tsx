@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ticketService } from '../services/ticketService';
 import { CreateTicketDTO, IssueType, TicketPriority } from '../types';
 import { ArrowLeft, Check, Sparkles, FileText, AlertTriangle } from 'lucide-react';
@@ -12,6 +12,7 @@ import Modal from '../components/Modal';
 
 export default function CreateTicketPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const [formData, setFormData] = useState<CreateTicketDTO>({
     brand_name: '',
@@ -43,6 +44,15 @@ export default function CreateTicketPage() {
       return { ticket };
     },
     onSuccess: (data) => {
+      // Invalidate all ticket-related queries to trigger refresh
+      queryClient.invalidateQueries({ queryKey: ['incoming-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['outgoing-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['my-assigned-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['my-created-tickets'] });
+      queryClient.invalidateQueries({ queryKey: ['team-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['team-workload'] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      
       navigate(`/tickets/${data.ticket.ticket_number}`);
     },
     onError: (err: any) => {

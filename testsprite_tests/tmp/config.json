@@ -3,16 +3,16 @@
   "type": "frontend",
   "scope": "codebase",
   "localEndpoint": "http://localhost:5173",
-  "loginUser": "growth@example.com",
-  "loginPassword": "growth123",
+  "loginUser": "ops-manager@example.com",
+  "loginPassword": "ops123",
   "executionArgs": {
     "projectName": "Escalation Portal",
     "projectPath": "/Users/abcom/Downloads/KNOT/Escalation Portal",
     "testIds": [],
-    "additionalInstruction": "",
+    "additionalInstruction": "Test the web app again with all the fixes implemented for RBAC, manager workflow, navigation, and error handling",
     "envs": {
       "API_KEY": "sk-user-zEjzHrFU3zZGyGlC0zog2rvP1YqvCDKqoUtvAbRjZ2VH5dA3LqyevZepKMFl8b15EN2CSHCgX40k7Y1qMv_MwrY_KCfmLaRDtlyp2FU7NHSpRlDFu81HQ6j0a4dgrA_t-ns"
     }
   },
-  "proxy": "http://6ecfa565-63e1-4bf9-882c-1f66a0b1c49f:TVa4dpnvzfEZoYlvEUfe8B0aoGmlqp4v@tun.testsprite.com:8080"
+  "proxy": "http://0c9b6feb-f029-42e8-94c9-d68339227e84:chVu7jayCBIHcTpyQu1oAGRE2HwlCqL7@tun.testsprite.com:8080"
 }

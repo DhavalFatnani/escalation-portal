@@ -10,12 +10,12 @@ const router = Router();
 // All routes require authentication
 router.use(requireAuth);
 
-// Create ticket (Growth or Ops team)
+// Create ticket (Growth, Ops, or Admin)
 router.post('/', validate(ticketSchemas.create), async (req: AuthRequest, res, next) => {
   try {
-    // Only Growth and Ops can create tickets (not admin)
-    if (req.user!.role !== 'growth' && req.user!.role !== 'ops') {
-      return res.status(403).json({ error: 'Only Growth and Ops team members can create tickets' });
+    // Growth, Ops, and Admin can create tickets
+    if (req.user!.role !== 'growth' && req.user!.role !== 'ops' && req.user!.role !== 'admin') {
+      return res.status(403).json({ error: 'Only Growth, Ops, and Admin can create tickets' });
     }
 
     const ticket = await ticketService.createTicket(req.user!.id, req.body);
@@ -33,6 +33,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
       priority: req.query.priority ? (req.query.priority as string).split(',') as any : undefined,
       brand_name: req.query.brand_name as string,
       created_by: req.query.created_by as string,
+      assigned_to: req.query.assigned_to as string,
       current_assignee: req.query.current_assignee as string,
       date_from: req.query.date_from as string,
       date_to: req.query.date_to as string,
@@ -57,9 +58,40 @@ router.get('/:ticket_number', async (req: AuthRequest, res, next) => {
       return res.status(404).json({ error: 'Ticket not found' });
     }
 
-    // Bidirectional access: Growth and Ops can see all tickets
-    // This allows both teams to view tickets they created and tickets assigned to them
-    // Admin has full access
+    // Access control:
+    // 1. Admin can view all tickets
+    // 2. Managers can view tickets created by OR assigned to their team members
+    // 3. Team members can view tickets they created OR are assigned to
+    // 4. Bidirectional: Growth and Ops can view tickets from opposite team (workflow)
+    
+    if (req.user!.role !== 'admin') {
+      const isCreator = ticket.created_by === req.user!.id;
+      const isAssigned = ticket.assigned_to === req.user!.id;
+      
+      // For managers: check if ticket is created by or assigned to their team members
+      let hasManagerAccess = false;
+      if (req.user!.is_manager) {
+        const managerAccessResult = await query(
+          `SELECT 1 FROM users 
+           WHERE (id = $1 OR id = $2) 
+           AND role = $3 
+           AND managed_by = $4`,
+          [ticket.created_by, ticket.assigned_to, req.user!.role, req.user!.id]
+        );
+        hasManagerAccess = managerAccessResult.rows.length > 0;
+      }
+
+      // Bidirectional workflow: opposite team can view tickets they need to resolve
+      const creatorResult = await query('SELECT role FROM users WHERE id = $1', [ticket.created_by]);
+      const creatorRole = creatorResult.rows[0]?.role;
+      const canViewForWorkflow = (creatorRole === 'growth' && req.user!.role === 'ops') || 
+                                  (creatorRole === 'ops' && req.user!.role === 'growth');
+
+      // Allow access if user is creator, assignee, manager of the team, or part of bidirectional workflow
+      if (!isCreator && !isAssigned && !hasManagerAccess && !canViewForWorkflow) {
+        return res.status(403).json({ error: 'Access denied to this ticket' });
+      }
+    }
 
     res.json({ ticket });
   } catch (error) {
@@ -335,6 +367,40 @@ router.post('/:ticket_number/force-status', async (req: AuthRequest, res, next) 
     } finally {
       client.release();
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Assign ticket to teammate (Managers only)
+router.post('/:ticket_number/assign', async (req: AuthRequest, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    // Only managers and admins can assign tickets
+    if (!req.user.is_manager && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only managers can assign tickets' });
+    }
+
+    const { assigned_to, notes } = req.body;
+
+    if (!assigned_to) {
+      return res.status(400).json({ error: 'assigned_to is required' });
+    }
+
+    const ticket = await ticketService.assignTicket(
+      req.params.ticket_number,
+      assigned_to,
+      req.user.id,
+      notes
+    );
+
+    res.json({ 
+      ticket,
+      message: 'Ticket assigned successfully'
+    });
   } catch (error) {
     next(error);
   }

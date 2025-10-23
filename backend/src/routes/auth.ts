@@ -22,6 +22,11 @@ router.post('/login', validate(authSchemas.login), async (req, res, next) => {
 
     const user = result.rows[0];
 
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Account is inactive. Please contact your manager or administrator.' });
+    }
+
     // In production, use proper password hashing
     // For now, using a simple check
     const isValid = await bcrypt.compare(password, user.password_hash || '');
@@ -53,6 +58,10 @@ router.post('/login', validate(authSchemas.login), async (req, res, next) => {
         email: user.email,
         name: user.name,
         role: user.role,
+        is_manager: user.is_manager || false,
+        is_active: user.is_active !== false,
+        managed_by: user.managed_by || null,
+        auto_assign_enabled: user.auto_assign_enabled || false,
         must_change_password: user.must_change_password || false,
       },
     });

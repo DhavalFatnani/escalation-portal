@@ -31,7 +31,7 @@ router.get('/me', async (req: AuthRequest, res, next) => {
 router.get('/', requireRole('admin'), async (req: AuthRequest, res, next) => {
   try {
     const result = await query(
-      'SELECT id, email, name, role, created_at, last_login_at FROM users ORDER BY created_at DESC'
+      'SELECT id, email, name, role, is_manager, is_active, created_at, last_login_at FROM users ORDER BY created_at DESC'
     );
 
     res.json({ users: result.rows });

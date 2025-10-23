@@ -26,6 +26,15 @@ export const ticketService = {
     if (filters?.brand_name) {
       params.append('brand_name', filters.brand_name);
     }
+    if (filters?.created_by) {
+      params.append('created_by', filters.created_by);
+    }
+    if (filters?.assigned_to) {
+      params.append('assigned_to', filters.assigned_to);
+    }
+    if (filters?.current_assignee) {
+      params.append('current_assignee', filters.current_assignee);
+    }
     if (filters?.search) {
       params.append('search', filters.search);
     }
@@ -35,6 +44,9 @@ export const ticketService = {
     if (filters?.offset) {
       params.append('offset', filters.offset.toString());
     }
+
+    console.log('ticketService.getTickets - Filters:', filters);
+    console.log('ticketService.getTickets - URL:', `/tickets?${params.toString()}`);
 
     const response = await api.get(`/tickets?${params.toString()}`);
     return response.data;

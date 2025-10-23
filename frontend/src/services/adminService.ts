@@ -28,4 +28,9 @@ export const adminService = {
     const response = await api.delete(`/admin/otp/${otpId}`);
     return response.data;
   },
+
+  async toggleManagerStatus(userId: string, isManager: boolean): Promise<{ user: any; message: string }> {
+    const response = await api.patch(`/admin/users/${userId}/toggle-manager`, { is_manager: isManager });
+    return response.data;
+  },
 };
