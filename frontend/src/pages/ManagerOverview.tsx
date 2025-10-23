@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { 
@@ -17,6 +17,7 @@ import PageHeader from '../components/PageHeader';
 
 const ManagerOverview: React.FC = () => {
   const user = useAuthStore((state) => state.user);
+  const [includeResolved, setIncludeResolved] = useState(false);
 
   // Fetch incoming tickets (tickets needing assignment to team)
   const { data: incomingData } = useQuery({
@@ -51,21 +52,21 @@ const ManagerOverview: React.FC = () => {
   const workload = workloadData?.workload || [];
   const metrics = metricsData;
 
-  // Calculate incoming ticket counts by status
+  // Calculate incoming ticket counts by status (respecting resolved filter)
   const incomingCounts = {
-    unassigned: incomingTickets.filter(t => !t.assigned_to).length,
-    urgent: incomingTickets.filter(t => t.priority === 'urgent').length,
-    high: incomingTickets.filter(t => t.priority === 'high').length,
-    total: incomingTickets.length
+    unassigned: incomingTickets.filter(t => !t.assigned_to && (includeResolved || t.status !== 'resolved')).length,
+    urgent: incomingTickets.filter(t => t.priority === 'urgent' && (includeResolved || t.status !== 'resolved')).length,
+    high: incomingTickets.filter(t => t.priority === 'high' && (includeResolved || t.status !== 'resolved')).length,
+    total: includeResolved ? incomingTickets.length : incomingTickets.filter(t => t.status !== 'resolved').length
   };
 
-  // Calculate outgoing ticket counts by status
+  // Calculate outgoing ticket counts by status (respecting resolved filter)
   const outgoingCounts = {
-    open: outgoingTickets.filter(t => t.status === 'open').length,
-    processed: outgoingTickets.filter(t => t.status === 'processed').length,
-    resolved: outgoingTickets.filter(t => t.status === 'resolved').length,
-    reopened: outgoingTickets.filter(t => t.status === 're-opened').length,
-    total: outgoingTickets.length
+    open: outgoingTickets.filter(t => t.status === 'open' && (includeResolved || t.status !== 'resolved')).length,
+    processed: outgoingTickets.filter(t => t.status === 'processed' && (includeResolved || t.status !== 'resolved')).length,
+    resolved: includeResolved ? outgoingTickets.filter(t => t.status === 'resolved').length : 0,
+    reopened: outgoingTickets.filter(t => t.status === 're-opened' && (includeResolved || t.status !== 'resolved')).length,
+    total: includeResolved ? outgoingTickets.length : outgoingTickets.filter(t => t.status !== 'resolved').length
   };
 
   const getPriorityColor = (priority: string) => {
@@ -99,6 +100,58 @@ const ManagerOverview: React.FC = () => {
           Welcome back, <span className="font-semibold text-gray-900">{user?.name}</span> 👋
         </p>
       </PageHeader>
+
+      {/* Show Resolved & Closed Toggle */}
+      <div className="card-modern">
+        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <CheckCircle className="w-3 h-3 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Show Resolved & Closed</p>
+              <p className="text-xs text-gray-600">
+                {includeResolved 
+                  ? 'Including resolved and closed tickets' 
+                  : 'Only active tickets (open, processed, re-opened)'
+                }
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIncludeResolved(!includeResolved)}
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              height: '28px',
+              width: '52px',
+              alignItems: 'center',
+              borderRadius: '9999px',
+              transition: 'background-color 0.2s',
+              backgroundColor: includeResolved ? '#6366f1' : '#d1d5db',
+              outline: 'none',
+              border: '2px solid',
+              borderColor: includeResolved ? '#6366f1' : '#d1d5db',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}
+            aria-label={includeResolved ? 'Hide resolved tickets' : 'Show resolved tickets'}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                height: '20px',
+                width: '20px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                transition: 'transform 0.2s',
+                transform: includeResolved ? 'translateX(24px)' : 'translateX(4px)',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+              }}
+            />
+          </button>
+        </div>
+      </div>
 
       {/* Incoming vs Outgoing Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
