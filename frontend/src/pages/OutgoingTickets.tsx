@@ -60,10 +60,10 @@ const OutgoingTickets: React.FC = () => {
 
   // Calculate counts by status (respecting resolved filter)
   const statusCounts = {
-    open: outgoingTickets.filter(t => t.status === 'open' && (includeResolved || t.status !== 'resolved')).length,
-    processed: outgoingTickets.filter(t => t.status === 'processed' && (includeResolved || t.status !== 'resolved')).length,
+    open: outgoingTickets.filter(t => t.status === 'open').length,
+    processed: outgoingTickets.filter(t => t.status === 'processed').length,
     resolved: includeResolved ? outgoingTickets.filter(t => t.status === 'resolved').length : 0,
-    reopened: outgoingTickets.filter(t => t.status === 're-opened' && (includeResolved || t.status !== 'resolved')).length,
+    reopened: outgoingTickets.filter(t => t.status === 're-opened').length,
     total: includeResolved ? outgoingTickets.length : outgoingTickets.filter(t => t.status !== 'resolved').length
   };
 
