@@ -411,107 +411,107 @@ export default function TicketsListPage() {
         ) : (
           <div className="space-y-3">
             {filteredTickets.map((ticket, index) => (
-              <Link
-                key={ticket.id}
-                to={`/tickets/${ticket.ticket_number}`}
-                className="block p-5 bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300 border-2 border-transparent hover:border-indigo-200 group animate-slide-in-right"
-                style={{ animationDelay: `${index * 30}ms` }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center flex-wrap gap-2 mb-3">
-                      <span className="text-sm font-bold text-gray-900 font-mono bg-white px-3 py-1.5 rounded-lg shadow-sm border border-gray-200">
-                        {ticket.ticket_number}
-                      </span>
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${getPriorityColor(ticket.priority)} shadow-sm`}>
-                        {ticket.priority.toUpperCase()}
-                      </span>
-                      <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border ${getStatusColor(ticket.status)}`}>
-                        {ticket.status}
-                      </span>
-                    </div>
-                    <p className="text-base font-semibold text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">
-                      {ticket.brand_name}
-                    </p>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                      {ticket.description || 'No description'}
-                    </p>
-                    <div className="flex items-center flex-wrap gap-3 text-xs text-gray-500">
-                      <span className="flex items-center bg-white px-3 py-1 rounded-full">
-                        <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
-                        {ticket.creator_name || ticket.creator_email}
-                      </span>
-                      {ticket.assigned_to_name ? (
-                        <span className="flex items-center bg-green-50 px-3 py-1 rounded-full text-green-700 font-medium">
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                          Assigned to {ticket.assigned_to_name}
+              <div key={ticket.id} className="relative">
+                <Link
+                  to={`/tickets/${ticket.ticket_number}`}
+                  className="block p-5 bg-gray-50 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all duration-300 border-2 border-transparent hover:border-indigo-200 group animate-slide-in-right"
+                  style={{ animationDelay: `${index * 30}ms` }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center flex-wrap gap-2 mb-3">
+                        <span className="text-sm font-bold text-gray-900 font-mono bg-white px-3 py-1.5 rounded-lg shadow-sm border border-gray-200">
+                          {ticket.ticket_number}
                         </span>
-                      ) : (user?.is_manager || user?.role === 'admin') ? (
-                        <span className="flex items-center bg-orange-50 px-3 py-1 rounded-full text-orange-700 font-medium">
-                          <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-                          Unassigned
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${getPriorityColor(ticket.priority)} shadow-sm`}>
+                          {ticket.priority.toUpperCase()}
                         </span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="ml-4 flex flex-col items-end">
-                    <span className="text-xs font-medium text-gray-500 bg-white px-3 py-1 rounded-full mb-2">
-                      {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </span>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </div>
-              </Link>
-
-              {/* Assignment Actions for Managers - Outside of Link to prevent navigation */}
-              {(user?.is_manager || user?.role === 'admin') && ticket.status !== 'resolved' && (
-                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
-                  {ticket.assigned_to ? (
-                    <div className="flex flex-col items-end space-y-2 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">Assigned to</p>
-                        <p className="text-sm font-medium text-green-600">{ticket.assigned_to_name}</p>
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold border ${getStatusColor(ticket.status)}`}>
+                          {ticket.status}
+                        </span>
                       </div>
-                      <select
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          if (e.target.value) handleIndividualAssign(ticket.ticket_number, e.target.value);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-3 py-1 text-xs border border-orange-300 rounded bg-orange-50 text-orange-700 hover:bg-orange-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent font-medium"
-                        defaultValue=""
-                      >
-                        <option value="">Reassign to...</option>
-                        {teamMembers.filter(member => member.is_active).map(member => (
-                          <option key={member.id} value={member.id}>
-                            {member.name} ({member.active_tickets || 0})
-                          </option>
-                        ))}
-                      </select>
+                      <p className="text-base font-semibold text-gray-900 mb-2 group-hover:text-indigo-700 transition-colors">
+                        {ticket.brand_name}
+                      </p>
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                        {ticket.description || 'No description'}
+                      </p>
+                      <div className="flex items-center flex-wrap gap-3 text-xs text-gray-500">
+                        <span className="flex items-center bg-white px-3 py-1 rounded-full">
+                          <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
+                          {ticket.creator_name || ticket.creator_email}
+                        </span>
+                        {ticket.assigned_to_name ? (
+                          <span className="flex items-center bg-green-50 px-3 py-1 rounded-full text-green-700 font-medium">
+                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                            Assigned to {ticket.assigned_to_name}
+                          </span>
+                        ) : (user?.is_manager || user?.role === 'admin') ? (
+                          <span className="flex items-center bg-orange-50 px-3 py-1 rounded-full text-orange-700 font-medium">
+                            <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                            Unassigned
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-200">
-                      <select
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          if (e.target.value) handleIndividualAssign(ticket.ticket_number, e.target.value);
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        className="px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        defaultValue=""
-                      >
-                        <option value="">Assign to...</option>
-                        {teamMembers.filter(member => member.is_active).map(member => (
-                          <option key={member.id} value={member.id}>
-                            {member.name} ({member.active_tickets || 0})
-                          </option>
-                        ))}
-                      </select>
+                    <div className="ml-4 flex flex-col items-end">
+                      <span className="text-xs font-medium text-gray-500 bg-white px-3 py-1 rounded-full mb-2">
+                        {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
+                  </div>
+                </Link>
+
+                {/* Assignment Actions for Managers - Outside of Link to prevent navigation */}
+                {(user?.is_manager || user?.role === 'admin') && ticket.status !== 'resolved' && (
+                  <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+                    {ticket.assigned_to ? (
+                      <div className="flex flex-col items-end space-y-2 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500">Assigned to</p>
+                          <p className="text-sm font-medium text-green-600">{ticket.assigned_to_name}</p>
+                        </div>
+                        <select
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            if (e.target.value) handleIndividualAssign(ticket.ticket_number, e.target.value);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-3 py-1 text-xs border border-orange-300 rounded bg-orange-50 text-orange-700 hover:bg-orange-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent font-medium"
+                          defaultValue=""
+                        >
+                          <option value="">Reassign to...</option>
+                          {teamMembers.filter(member => member.is_active).map(member => (
+                            <option key={member.id} value={member.id}>
+                              {member.name} ({member.active_tickets || 0})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-200">
+                        <select
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            if (e.target.value) handleIndividualAssign(ticket.ticket_number, e.target.value);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          defaultValue=""
+                        >
+                          <option value="">Assign to...</option>
+                          {teamMembers.filter(member => member.is_active).map(member => (
+                            <option key={member.id} value={member.id}>
+                              {member.name} ({member.active_tickets || 0})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
 
             {filteredTickets.length === 0 && (
