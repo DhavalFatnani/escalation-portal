@@ -67,12 +67,12 @@ const OutgoingTickets: React.FC = () => {
     total: includeResolved ? outgoingTickets.length : outgoingTickets.filter(t => t.status !== 'resolved').length
   };
 
-  // Calculate counts by priority
+  // Calculate counts by priority (using filtered tickets)
   const priorityCounts = {
-    urgent: outgoingTickets.filter(t => t.priority === 'urgent').length,
-    high: outgoingTickets.filter(t => t.priority === 'high').length,
-    medium: outgoingTickets.filter(t => t.priority === 'medium').length,
-    low: outgoingTickets.filter(t => t.priority === 'low').length,
+    urgent: filteredTickets.filter(t => t.priority === 'urgent').length,
+    high: filteredTickets.filter(t => t.priority === 'high').length,
+    medium: filteredTickets.filter(t => t.priority === 'medium').length,
+    low: filteredTickets.filter(t => t.priority === 'low').length,
   };
 
   const getPriorityColor = (priority: string) => {
