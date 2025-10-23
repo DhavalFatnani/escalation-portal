@@ -97,7 +97,7 @@ const IncomingTickets: React.FC = () => {
   const incomingTickets = incomingData?.tickets || [];
   const teamMembers = teamData?.team_members || [];
 
-  // Filter tickets based on search and filters
+  // Filter tickets based on search and filters (exclude resolved tickets from assignment)
   const filteredTickets = incomingTickets.filter(ticket => {
     const matchesSearch = !searchTerm || 
       ticket.ticket_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,15 +109,18 @@ const IncomingTickets: React.FC = () => {
       (statusFilter === 'unassigned' && !ticket.assigned_to) ||
       (statusFilter === 'assigned' && ticket.assigned_to);
 
-    return matchesSearch && matchesPriority && matchesStatus;
+    // Exclude resolved tickets from assignment consideration
+    const isAssignable = ticket.status !== 'resolved';
+
+    return matchesSearch && matchesPriority && matchesStatus && isAssignable;
   });
 
-  // Calculate counts
+  // Calculate counts (exclude resolved tickets from assignment counts)
   const counts = {
     total: incomingTickets.length,
-    unassigned: incomingTickets.filter(t => !t.assigned_to).length,
+    unassigned: incomingTickets.filter(t => !t.assigned_to && t.status !== 'resolved').length,
     urgent: incomingTickets.filter(t => t.priority === 'urgent' && t.status !== 'resolved').length,
-    high: incomingTickets.filter(t => t.priority === 'high').length,
+    high: incomingTickets.filter(t => t.priority === 'high' && t.status !== 'resolved').length,
   };
 
   const handleAutoAssignToggle = () => {
@@ -144,7 +147,7 @@ const IncomingTickets: React.FC = () => {
   };
 
   const handleSelectAll = () => {
-    const unassignedTickets = filteredTickets.filter(t => !t.assigned_to);
+    const unassignedTickets = filteredTickets.filter(t => !t.assigned_to && t.status !== 'resolved');
     const unassignedTicketNumbers = unassignedTickets.map(t => t.ticket_number);
     
     // Check if all unassigned tickets are currently selected
@@ -406,8 +409,8 @@ const IncomingTickets: React.FC = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3 flex-1">
-                      {/* Checkbox for unassigned tickets */}
-                      {!ticket.assigned_to && (
+                      {/* Checkbox for unassigned tickets (excluding resolved) */}
+                      {!ticket.assigned_to && ticket.status !== 'resolved' && (
                         <CustomCheckbox
                           checked={selectedTickets.includes(ticket.ticket_number)}
                           onChange={() => handleSelectTicket(ticket.ticket_number)}

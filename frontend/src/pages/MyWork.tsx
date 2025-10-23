@@ -22,14 +22,26 @@ const MyWork: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [includeResolved, setIncludeResolved] = useState(false);
+
+  // Build status filter: exclude resolved/closed by default unless includeResolved is true
+  const getEffectiveStatusFilter = (filter: string) => {
+    if (filter !== 'all') {
+      return [filter as any];
+    }
+    if (!includeResolved) {
+      return ['open', 'processed', 're-opened'] as any[];
+    }
+    return undefined;
+  };
 
   // Fetch tickets assigned to the user
   const { data: assignedData, isLoading: assignedLoading } = useQuery({
-    queryKey: ['my-assigned-tickets', { search: searchTerm, status: statusFilter, priority: priorityFilter }],
+    queryKey: ['my-assigned-tickets', { search: searchTerm, status: statusFilter, priority: priorityFilter, includeResolved }],
     queryFn: () => ticketService.getTickets({
       assigned_to: user?.id,
       search: searchTerm || undefined,
-      status: statusFilter !== 'all' ? [statusFilter as any] : undefined,
+      status: getEffectiveStatusFilter(statusFilter),
       priority: priorityFilter !== 'all' ? [priorityFilter as any] : undefined,
       limit: 50
     }),
@@ -38,11 +50,11 @@ const MyWork: React.FC = () => {
 
   // Fetch tickets created by the user
   const { data: createdData, isLoading: createdLoading } = useQuery({
-    queryKey: ['my-created-tickets', { search: searchTerm, status: statusFilter, priority: priorityFilter }],
+    queryKey: ['my-created-tickets', { search: searchTerm, status: statusFilter, priority: priorityFilter, includeResolved }],
     queryFn: () => ticketService.getTickets({
       created_by: user?.id,
       search: searchTerm || undefined,
-      status: statusFilter !== 'all' ? [statusFilter as any] : undefined,
+      status: getEffectiveStatusFilter(statusFilter),
       priority: priorityFilter !== 'all' ? [priorityFilter as any] : undefined,
       limit: 50
     }),
@@ -198,6 +210,58 @@ const MyWork: React.FC = () => {
 
       {/* Filters and Search */}
       <div className="card-modern">
+        {/* Include Resolved/Closed Toggle - Compact version */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center">
+                <Briefcase className="w-3 h-3 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Show Resolved & Closed</p>
+                <p className="text-xs text-gray-600">
+                  {includeResolved 
+                    ? 'Including resolved and closed tickets' 
+                    : 'Only active tickets (open, processed, re-opened)'
+                  }
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIncludeResolved(!includeResolved)}
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                height: '28px',
+                width: '52px',
+                alignItems: 'center',
+                borderRadius: '9999px',
+                transition: 'background-color 0.2s',
+                backgroundColor: includeResolved ? '#059669' : '#d1d5db',
+                outline: 'none',
+                border: '2px solid',
+                borderColor: includeResolved ? '#059669' : '#d1d5db',
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+              }}
+              aria-label={includeResolved ? 'Hide resolved tickets' : 'Show resolved tickets'}
+            >
+              <span
+                style={{
+                  display: 'inline-block',
+                  height: '20px',
+                  width: '20px',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  transition: 'transform 0.2s',
+                  transform: includeResolved ? 'translateX(24px)' : 'translateX(4px)',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                }}
+              />
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
@@ -226,6 +290,7 @@ const MyWork: React.FC = () => {
               <option value="processed">Processed</option>
               <option value="resolved">Resolved</option>
               <option value="re-opened">Reopened</option>
+              <option value="closed">Closed</option>
             </select>
           </div>
 

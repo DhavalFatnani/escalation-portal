@@ -255,6 +255,9 @@ const ManagerDashboard: React.FC = () => {
           onClose={() => setSelectedTicket(null)}
           ticketNumber={selectedTicket.ticket_number}
           ticketBrand={selectedTicket.brand_name}
+          ticketStatus={selectedTicket.status}
+          currentAssignee={selectedTicket.assigned_to}
+          currentAssigneeName={selectedTicket.assigned_to_name}
         />
       )}
     </div>

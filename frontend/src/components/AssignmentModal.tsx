@@ -9,6 +9,7 @@ interface AssignmentModalProps {
   onClose: () => void;
   ticketNumber: string;
   ticketBrand: string;
+  ticketStatus?: string;
   currentAssignee?: string | null;
   currentAssigneeName?: string | null;
 }
@@ -18,6 +19,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
   onClose,
   ticketNumber,
   ticketBrand,
+  ticketStatus,
   currentAssignee,
   currentAssigneeName,
 }) => {
@@ -25,6 +27,32 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
   const [notes, setNotes] = useState('');
   const queryClient = useQueryClient();
   const { modalState, showSuccess, showError, hideModal } = useModal();
+
+  // Prevent assignment of resolved tickets
+  const isResolved = ticketStatus === 'resolved';
+  
+  if (isResolved) {
+    return (
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Cannot Assign Resolved Ticket"
+        type="warning"
+      >
+        <div className="text-center py-4">
+          <p className="text-gray-600 mb-4">
+            This ticket has been resolved and cannot be assigned or reassigned.
+          </p>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    );
+  }
 
   // Fetch team members
   const { data: teamData, isLoading } = useQuery({

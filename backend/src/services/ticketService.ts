@@ -538,6 +538,11 @@ export class TicketService {
         throw new AppError('Ticket not found', 404);
       }
 
+      // Prevent assignment of resolved tickets
+      if (ticket.status === 'resolved') {
+        throw new AppError('Cannot assign or reassign a resolved ticket', 400);
+      }
+
       // Check if this is a reassignment (ticket already has someone assigned)
       const isReassignment = ticket.assigned_to !== null;
       const previousAssignee = ticket.assigned_to;

@@ -174,6 +174,70 @@ export default function TicketsListPage() {
         </form>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Include Resolved/Closed Toggle */}
+          <div className="md:col-span-2">
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <TicketIcon className="w-3 h-3 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Show Resolved & Closed</p>
+                  <p className="text-xs text-gray-600">
+                    {includeResolved 
+                      ? 'Including resolved and closed tickets' 
+                      : 'Only active tickets (open, processed, re-opened)'
+                    }
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const newValue = !includeResolved;
+                  setIncludeResolved(newValue);
+                  setSearchParams(prev => {
+                    const newParams = new URLSearchParams(prev);
+                    if (newValue) {
+                      newParams.set('includeResolved', 'true');
+                    } else {
+                      newParams.delete('includeResolved');
+                    }
+                    return newParams;
+                  });
+                }}
+                style={{
+                  position: 'relative',
+                  display: 'inline-flex',
+                  height: '28px',
+                  width: '52px',
+                  alignItems: 'center',
+                  borderRadius: '9999px',
+                  transition: 'background-color 0.2s',
+                  backgroundColor: includeResolved ? '#2563eb' : '#d1d5db',
+                  outline: 'none',
+                  border: '2px solid',
+                  borderColor: includeResolved ? '#2563eb' : '#d1d5db',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}
+                aria-label={includeResolved ? 'Hide resolved tickets' : 'Show resolved tickets'}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    height: '20px',
+                    width: '20px',
+                    borderRadius: '50%',
+                    backgroundColor: 'white',
+                    transition: 'transform 0.2s',
+                    transform: includeResolved ? 'translateX(24px)' : 'translateX(4px)',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                  }}
+                />
+              </button>
+            </div>
+          </div>
+
           {/* Status Filter */}
           <div>
             <p className="text-sm font-bold text-gray-700 mb-3 flex items-center uppercase tracking-wide">
@@ -181,7 +245,7 @@ export default function TicketsListPage() {
               Status
             </p>
             <div className="flex flex-wrap gap-2">
-              {(['open', 'processed', 're-opened', 'resolved'] as TicketStatus[]).map((status) => (
+              {(['open', 'processed', 're-opened', 'resolved', 'closed'] as TicketStatus[]).map((status) => (
                 <button
                   key={status}
                   onClick={() => toggleFilter('status', status)}

@@ -980,6 +980,9 @@ export default function TicketDetailPage() {
               onClose={() => setShowAssignmentModal(false)}
               ticketNumber={ticket.ticket_number}
               ticketBrand={ticket.brand_name}
+              ticketStatus={ticket.status}
+              currentAssignee={ticket.assigned_to}
+              currentAssigneeName={ticket.assigned_to_name}
             />
           )}
 
