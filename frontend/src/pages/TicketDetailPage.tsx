@@ -416,13 +416,6 @@ export default function TicketDetailPage() {
   // - Reopen: Only the creator's team can reopen their own tickets
   // - Close: Only the creator's team can close their own tickets
   
-  console.log('Permission Debug:', {
-    userRole: user?.role,
-    creatorRole: ticket.creator_role,
-    ticketStatus: ticket.status,
-    ticketNumber: ticket.ticket_number
-  });
-  
   const canResolve = user?.role === 'admin' 
     ? (ticket.status === 'open' || ticket.status === 're-opened')
     : (ticket.creator_role === 'growth' && user?.role === 'ops' && (ticket.status === 'open' || ticket.status === 're-opened')) ||
@@ -439,8 +432,6 @@ export default function TicketDetailPage() {
     ? ticket.status === 'processed'
     : user?.role === ticket.creator_role && ticket.status === 'processed';
   
-  console.log('Permission Results:', { canResolve, canReopen, canClose });
-
   return (
     <div>
       <button

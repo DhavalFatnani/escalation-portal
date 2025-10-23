@@ -38,7 +38,6 @@ const MyEscalations: React.FC = () => {
   const { data: createdData, isLoading: createdLoading } = useQuery({
     queryKey: ['my-created-tickets', { search: searchTerm, status: statusFilter, priority: priorityFilter, includeResolved }],
     queryFn: () => {
-      console.log('MyEscalations Query - User ID:', user?.id, 'Role:', user?.role, 'Is Manager:', user?.is_manager);
       return ticketService.getTickets({
         created_by: user?.id,
         search: searchTerm || undefined,
@@ -51,15 +50,6 @@ const MyEscalations: React.FC = () => {
   });
 
   const createdTickets = createdData?.tickets || [];
-  
-  // Debug log to see what tickets are returned
-  console.log('MyEscalations Tickets Returned:', createdTickets.map(t => ({
-    ticket_number: t.ticket_number,
-    created_by: t.creator_name,
-    creator_role: t.creator_role,
-    status: t.status,
-    assigned_to: t.assigned_to_name
-  })));
 
   // Calculate counts
   const counts = {

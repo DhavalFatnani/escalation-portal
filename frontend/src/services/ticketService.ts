@@ -45,9 +45,6 @@ export const ticketService = {
       params.append('offset', filters.offset.toString());
     }
 
-    console.log('ticketService.getTickets - Filters:', filters);
-    console.log('ticketService.getTickets - URL:', `/tickets?${params.toString()}`);
-
     const response = await api.get(`/tickets?${params.toString()}`);
     return response.data;
   },
