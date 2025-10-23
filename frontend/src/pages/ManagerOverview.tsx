@@ -63,7 +63,7 @@ const ManagerOverview: React.FC = () => {
   const outgoingCounts = {
     open: outgoingTickets.filter(t => t.status === 'open').length,
     processed: outgoingTickets.filter(t => t.status === 'processed').length,
-    resolved: 0, // Never show resolved in manager overview
+    resolved: outgoingTickets.filter(t => t.status === 'resolved').length, // Show actual resolved count
     reopened: outgoingTickets.filter(t => t.status === 're-opened').length,
     total: outgoingTickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length
   };
