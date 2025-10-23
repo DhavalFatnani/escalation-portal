@@ -14,8 +14,80 @@ import {
 } from 'lucide-react';
 import { managerService } from '../services/managerService';
 
+type TimeRange = '7d' | '30d' | '90d' | 'custom';
+
+interface CustomDateRange {
+  startDate: string;
+  endDate: string;
+}
+
 const TeamPerformance: React.FC = () => {
-  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
+  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [customRange, setCustomRange] = useState<CustomDateRange>({
+    startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0]
+  });
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+
+  // Helper functions for date calculations
+  const getDateRange = (range: TimeRange): { startDate: string; endDate: string } => {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
+    switch (range) {
+      case '7d':
+        return {
+          startDate: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          endDate: today
+        };
+      case '30d':
+        return {
+          startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          endDate: today
+        };
+      case '90d':
+        return {
+          startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          endDate: today
+        };
+      case 'custom':
+        return customRange;
+      default:
+        return {
+          startDate: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          endDate: today
+        };
+    }
+  };
+
+  const formatDateRange = (range: TimeRange): string => {
+    const { startDate, endDate } = getDateRange(range);
+    const start = new Date(startDate).toLocaleDateString();
+    const end = new Date(endDate).toLocaleDateString();
+    
+    if (range === 'custom') {
+      return `${start} - ${end}`;
+    }
+    
+    const days = Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
+    return `Last ${days} days`;
+  };
+
+  const handleTimeRangeChange = (newRange: TimeRange) => {
+    setTimeRange(newRange);
+    if (newRange !== 'custom') {
+      setShowCustomPicker(false);
+    } else {
+      setShowCustomPicker(true);
+    }
+  };
+
+  const handleCustomRangeChange = (field: 'startDate' | 'endDate', value: string) => {
+    setCustomRange(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   // Fetch team metrics
   const { data: metricsData } = useQuery({
@@ -109,17 +181,53 @@ const TeamPerformance: React.FC = () => {
           </p>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-gray-500" />
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d')}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          >
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-          </select>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600">Time Range:</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <select
+              value={timeRange}
+              onChange={(e) => handleTimeRangeChange(e.target.value as TimeRange)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+            >
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            
+            <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+              {formatDateRange(timeRange)}
+            </span>
+          </div>
+          
+          {showCustomPicker && (
+            <div className="flex items-center space-x-2 bg-blue-50 p-2 rounded-lg border border-blue-200">
+              <span className="text-sm text-blue-700">From:</span>
+              <input
+                type="date"
+                value={customRange.startDate}
+                onChange={(e) => handleCustomRangeChange('startDate', e.target.value)}
+                className="px-2 py-1 border border-blue-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+              />
+              <span className="text-sm text-blue-700">To:</span>
+              <input
+                type="date"
+                value={customRange.endDate}
+                onChange={(e) => handleCustomRangeChange('endDate', e.target.value)}
+                className="px-2 py-1 border border-blue-300 rounded text-sm focus:ring-1 focus:ring-blue-500"
+              />
+              <button
+                onClick={() => setShowCustomPicker(false)}
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                ✓
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
