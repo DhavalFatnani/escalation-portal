@@ -427,11 +427,7 @@ export default function TicketDetailPage() {
   const canReopen = user?.role === 'admin'
     ? ticket.status === 'processed'
     : (user?.role === ticket.creator_role || userCreatedByTeamMember) && ticket.status === 'processed';
-  
-  const canClose = user?.role === 'admin'
-    ? ticket.status === 'processed'
-    : user?.role === ticket.creator_role && ticket.status === 'processed';
-  
+
   return (
     <div>
       <button
@@ -474,12 +470,12 @@ export default function TicketDetailPage() {
                         'Delete Ticket',
                         `Are you sure you want to DELETE ticket ${ticket.ticket_number}?\n\nThis action cannot be undone and will remove:\n- The ticket\n- All activities\n- All attachments`,
                         () => {
-                          const confirmation = prompt('Type DELETE to confirm:');
-                          if (confirmation === 'DELETE') {
-                            deleteTicketMutation.mutate();
+                        const confirmation = prompt('Type DELETE to confirm:');
+                        if (confirmation === 'DELETE') {
+                          deleteTicketMutation.mutate();
                           } else {
                             showError('Deletion Cancelled', 'Please type "DELETE" exactly to confirm deletion.');
-                          }
+                        }
                         },
                         'Delete Ticket',
                         'Cancel'
@@ -615,17 +611,17 @@ export default function TicketDetailPage() {
                 </div>
               ) : (
                 <>
-                  {/* Initial Files */}
-                  {initial.length > 0 && (
-                    <div className="mt-6 pt-4 border-t border-gray-200">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                        <Paperclip className="w-4 h-4 mr-2" />
-                        Attached Files ({initial.length})
-                      </h4>
-                      <div className="space-y-2">
-                        {initial.map(renderAttachment)}
-                      </div>
-                    </div>
+              {/* Initial Files */}
+              {initial.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+                    <Paperclip className="w-4 h-4 mr-2" />
+                    Attached Files ({initial.length})
+                  </h4>
+                  <div className="space-y-2">
+                    {initial.map(renderAttachment)}
+                  </div>
+                </div>
                   )}
                 </>
               )}
