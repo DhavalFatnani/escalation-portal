@@ -29,6 +29,7 @@ const IncomingTickets: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [includeResolved, setIncludeResolved] = useState(false);
   const [autoAssignEnabled, setAutoAssignEnabled] = useState(user?.auto_assign_enabled || false);
 
   // Fetch incoming tickets
@@ -97,7 +98,7 @@ const IncomingTickets: React.FC = () => {
   const incomingTickets = incomingData?.tickets || [];
   const teamMembers = teamData?.team_members || [];
 
-  // Filter tickets based on search and filters (exclude resolved tickets from assignment)
+  // Filter tickets based on search and filters
   const filteredTickets = incomingTickets.filter(ticket => {
     const matchesSearch = !searchTerm || 
       ticket.ticket_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -109,18 +110,18 @@ const IncomingTickets: React.FC = () => {
       (statusFilter === 'unassigned' && !ticket.assigned_to) ||
       (statusFilter === 'assigned' && ticket.assigned_to);
 
-    // Exclude resolved tickets from assignment consideration
-    const isAssignable = ticket.status !== 'resolved';
+    // Include resolved tickets based on toggle
+    const matchesResolvedFilter = includeResolved || ticket.status !== 'resolved';
 
-    return matchesSearch && matchesPriority && matchesStatus && isAssignable;
+    return matchesSearch && matchesPriority && matchesStatus && matchesResolvedFilter;
   });
 
-  // Calculate counts (exclude resolved tickets from assignment counts)
+  // Calculate counts based on resolved filter
   const counts = {
-    total: incomingTickets.length,
-    unassigned: incomingTickets.filter(t => !t.assigned_to && t.status !== 'resolved').length,
-    urgent: incomingTickets.filter(t => t.priority === 'urgent' && t.status !== 'resolved').length,
-    high: incomingTickets.filter(t => t.priority === 'high' && t.status !== 'resolved').length,
+    total: includeResolved ? incomingTickets.length : incomingTickets.filter(t => t.status !== 'resolved').length,
+    unassigned: incomingTickets.filter(t => !t.assigned_to && (includeResolved || t.status !== 'resolved')).length,
+    urgent: incomingTickets.filter(t => t.priority === 'urgent' && (includeResolved || t.status !== 'resolved')).length,
+    high: incomingTickets.filter(t => t.priority === 'high' && (includeResolved || t.status !== 'resolved')).length,
   };
 
   const handleAutoAssignToggle = () => {
@@ -147,7 +148,7 @@ const IncomingTickets: React.FC = () => {
   };
 
   const handleSelectAll = () => {
-    const unassignedTickets = filteredTickets.filter(t => !t.assigned_to && t.status !== 'resolved');
+    const unassignedTickets = filteredTickets.filter(t => !t.assigned_to);
     const unassignedTicketNumbers = unassignedTickets.map(t => t.ticket_number);
     
     // Check if all unassigned tickets are currently selected
@@ -318,6 +319,58 @@ const IncomingTickets: React.FC = () => {
         </div>
       </div>
 
+      {/* Show Resolved & Closed Toggle */}
+      <div className="card-modern">
+        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
+              <ArrowDownCircle className="w-3 h-3 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Show Resolved & Closed</p>
+              <p className="text-xs text-gray-600">
+                {includeResolved 
+                  ? 'Including resolved and closed tickets' 
+                  : 'Only active tickets (open, processed, re-opened)'
+                }
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIncludeResolved(!includeResolved)}
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              height: '28px',
+              width: '52px',
+              alignItems: 'center',
+              borderRadius: '9999px',
+              transition: 'background-color 0.2s',
+              backgroundColor: includeResolved ? '#2563eb' : '#d1d5db',
+              outline: 'none',
+              border: '2px solid',
+              borderColor: includeResolved ? '#2563eb' : '#d1d5db',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}
+            aria-label={includeResolved ? 'Hide resolved tickets' : 'Show resolved tickets'}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                height: '20px',
+                width: '20px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                transition: 'transform 0.2s',
+                transform: includeResolved ? 'translateX(24px)' : 'translateX(4px)',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+              }}
+            />
+          </button>
+        </div>
+      </div>
+
       {/* Bulk Actions */}
       {selectedTickets.length > 0 && (
         <div className="card-modern bg-blue-50 border-blue-200">
@@ -409,8 +462,8 @@ const IncomingTickets: React.FC = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3 flex-1">
-                      {/* Checkbox for unassigned tickets (excluding resolved) */}
-                      {!ticket.assigned_to && ticket.status !== 'resolved' && (
+                      {/* Checkbox for unassigned tickets */}
+                      {!ticket.assigned_to && (
                         <CustomCheckbox
                           checked={selectedTickets.includes(ticket.ticket_number)}
                           onChange={() => handleSelectTicket(ticket.ticket_number)}

@@ -22,6 +22,7 @@ const OutgoingTickets: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [teamMemberFilter, setTeamMemberFilter] = useState<string>('all');
+  const [includeResolved, setIncludeResolved] = useState(false);
 
   // Fetch outgoing tickets
   const { data: outgoingData, isLoading: outgoingLoading } = useQuery({
@@ -51,16 +52,19 @@ const OutgoingTickets: React.FC = () => {
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
     const matchesTeamMember = teamMemberFilter === 'all' || ticket.created_by === teamMemberFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesTeamMember;
+    // Include resolved tickets based on toggle
+    const matchesResolvedFilter = includeResolved || ticket.status !== 'resolved';
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesTeamMember && matchesResolvedFilter;
   });
 
-  // Calculate counts by status
+  // Calculate counts by status (respecting resolved filter)
   const statusCounts = {
-    open: outgoingTickets.filter(t => t.status === 'open').length,
-    processed: outgoingTickets.filter(t => t.status === 'processed').length,
-    resolved: outgoingTickets.filter(t => t.status === 'resolved').length,
-    reopened: outgoingTickets.filter(t => t.status === 're-opened').length,
-    total: outgoingTickets.length
+    open: outgoingTickets.filter(t => t.status === 'open' && (includeResolved || t.status !== 'resolved')).length,
+    processed: outgoingTickets.filter(t => t.status === 'processed' && (includeResolved || t.status !== 'resolved')).length,
+    resolved: includeResolved ? outgoingTickets.filter(t => t.status === 'resolved').length : 0,
+    reopened: outgoingTickets.filter(t => t.status === 're-opened' && (includeResolved || t.status !== 'resolved')).length,
+    total: includeResolved ? outgoingTickets.length : outgoingTickets.filter(t => t.status !== 'resolved').length
   };
 
   // Calculate counts by priority
@@ -258,6 +262,58 @@ const OutgoingTickets: React.FC = () => {
               ))}
             </select>
           </div>
+        </div>
+      </div>
+
+      {/* Show Resolved & Closed Toggle */}
+      <div className="card-modern">
+        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
+              <ArrowUpCircle className="w-3 h-3 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Show Resolved & Closed</p>
+              <p className="text-xs text-gray-600">
+                {includeResolved 
+                  ? 'Including resolved and closed tickets' 
+                  : 'Only active tickets (open, processed, re-opened)'
+                }
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setIncludeResolved(!includeResolved)}
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              height: '28px',
+              width: '52px',
+              alignItems: 'center',
+              borderRadius: '9999px',
+              transition: 'background-color 0.2s',
+              backgroundColor: includeResolved ? '#9333ea' : '#d1d5db',
+              outline: 'none',
+              border: '2px solid',
+              borderColor: includeResolved ? '#9333ea' : '#d1d5db',
+              cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}
+            aria-label={includeResolved ? 'Hide resolved tickets' : 'Show resolved tickets'}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                height: '20px',
+                width: '20px',
+                borderRadius: '50%',
+                backgroundColor: 'white',
+                transition: 'transform 0.2s',
+                transform: includeResolved ? 'translateX(24px)' : 'translateX(4px)',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+              }}
+            />
+          </button>
         </div>
       </div>
 
