@@ -94,21 +94,21 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ collapsed = false }
   }
 
   return (
-    <div className="px-3 py-3 bg-indigo-600/20 border border-indigo-600/30 rounded-lg relative">
+    <div className="px-3 py-3 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg relative">
       <button
         onClick={handleDismiss}
-        className="absolute top-2 right-2 text-gray-400 hover:text-white"
+        className="absolute top-2 right-2 text-slate-400 hover:text-slate-600"
         aria-label="Dismiss"
       >
         <X className="w-4 h-4" />
       </button>
       
       <div className="flex items-center space-x-2 mb-2">
-        <Download className="w-5 h-5 text-indigo-400" />
-        <h3 className="text-sm font-semibold text-white">Install App</h3>
+        <Download className="w-5 h-5 text-indigo-600" />
+        <h3 className="text-sm font-semibold text-slate-800">Install App</h3>
       </div>
       
-      <p className="text-xs text-gray-300 mb-3">
+      <p className="text-xs text-slate-600 mb-3">
         Install Escalation Portal for quick access and offline support
       </p>
       

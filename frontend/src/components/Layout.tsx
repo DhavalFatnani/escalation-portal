@@ -23,10 +23,10 @@ export default function Layout() {
           isSidebarCollapsed ? 'md:ml-20' : 'md:ml-[280px]'
         }`}
       >
-        {/* Main Content */}
+      {/* Main Content */}
         <main className="flex-1 px-8 py-8 overflow-auto">
           <Outlet />
-        </main>
+      </main>
         </div>
     </div>
   );

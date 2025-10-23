@@ -602,3 +602,53 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
+
+/* Sidebar icon improvements */
+.sidebar-icon {
+  transition: all 0.2s ease-in-out;
+  transform-origin: center;
+}
+
+.sidebar-icon:hover {
+  transform: scale(1.05);
+}
+
+/* Smooth sidebar transitions */
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Prevent layout shifts during animation */
+.sidebar-item-content {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.sidebar-item-text {
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+/* Enhanced sidebar animations */
+.sidebar-text-fade {
+  transition: opacity 0.3s ease-in-out, width 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.sidebar-text-fade.collapsed {
+  opacity: 0;
+  width: 0;
+  transform: scale(0.8);
+}
+
+.sidebar-text-fade.expanded {
+  opacity: 1;
+  width: auto;
+  transform: scale(1);
+}
+
+/* Prevent text overflow during transitions */
+.sidebar-overflow-hidden {
+  overflow: hidden;
+  white-space: nowrap;
+}

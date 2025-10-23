@@ -262,23 +262,21 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
           fixed left-0 top-0 h-full z-50 transition-all duration-300 ease-in-out
           ${isSidebarCollapsed ? 'w-16' : 'w-72'}
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          bg-white border-r border-slate-200 shadow-xl
+          bg-white border-r border-slate-200 shadow-xl overflow-hidden
         `}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
-            {!isSidebarCollapsed && (
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-800">Escalation Portal</h2>
-                  <p className="text-xs text-slate-500 capitalize">{user?.role} Portal</p>
-                </div>
+            <div className={`flex items-center space-x-3 transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 scale-0 w-0' : 'opacity-100 scale-100'}`}>
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-            )}
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold text-slate-800">Escalation Portal</h2>
+                <p className="text-xs text-slate-500 capitalize">{user?.role} Portal</p>
+              </div>
+            </div>
             <button
               onClick={toggleSidebar}
               className="hidden md:flex p-2 rounded-lg hover:bg-slate-100 transition-colors"
@@ -293,13 +291,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
             {navigationGroups.map((group) => (
               <div key={group.label} className="mb-6">
                 {/* Group Header */}
-                {!isSidebarCollapsed && (
-                  <div className="px-3 mb-3">
-                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      {group.label}
-                    </h3>
-                  </div>
-                )}
+                <div className={`px-3 mb-3 transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 h-0 mb-0' : 'opacity-100 h-auto'}`}>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {group.label}
+                  </h3>
+                </div>
 
                 {/* Group Items */}
                 <div className="space-y-1">
@@ -316,10 +312,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                           onClick={handleLogout}
                           className="w-full flex items-center px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 hover:text-red-700 transition-all duration-200 group"
                         >
-                          <Icon className="w-5 h-5 mr-3" />
-                          {!isSidebarCollapsed && (
-                            <span className="flex-1 text-left">{item.label}</span>
-                          )}
+                          <Icon className="w-5 h-5 flex-shrink-0 mr-3" />
+                          <span className={`flex-1 text-left transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>
+                            {item.label}
+                          </span>
                         </button>
                       );
                     }
@@ -329,30 +325,29 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                         key={item.path}
                         to={item.path}
                         className={`
-                          flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 group relative
+                          flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ease-in-out group relative
                           ${active 
                             ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25' 
                             : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                           }
                         `}
                       >
-                        <Icon className={`w-5 h-5 mr-3 ${active ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
+                        <Icon className={`w-5 h-5 flex-shrink-0 mr-3 ${active ? 'text-white' : 'text-slate-500 group-hover:text-slate-700'}`} />
                         
-                        {!isSidebarCollapsed && (
-                          <>
-                            <span className="flex-1 text-left">{item.label}</span>
-                            {badgeValue > 0 && (
-                              <span className={`
-                                px-2 py-1 text-xs font-bold rounded-full
-                                ${active 
-                                  ? 'bg-white/20 text-white' 
-                                  : 'bg-blue-500 text-white'
-                                }
-                              `}>
-                                {badgeValue}
-                              </span>
-                            )}
-                          </>
+                        <span className={`flex-1 text-left transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>
+                          {item.label}
+                        </span>
+                        {badgeValue > 0 && (
+                          <span className={`
+                            px-2 py-1 text-xs font-bold rounded-full transition-all duration-300
+                            ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}
+                            ${active 
+                              ? 'bg-white/20 text-white' 
+                              : 'bg-blue-500 text-white'
+                            }
+                          `}>
+                            {badgeValue}
+                          </span>
                         )}
 
                         {/* Tooltip for collapsed state */}
@@ -386,38 +381,34 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
             
             {/* User Info - Clickable */}
             <div className="relative" data-user-menu>
-              {!isSidebarCollapsed ? (
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-full bg-white rounded-xl p-3 border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
-                >
-                  <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-lg">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                      <p className="text-sm font-semibold text-slate-800 truncate">{user?.name}</p>
-                      <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className={`w-full bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group ${
+                  isSidebarCollapsed ? 'p-2 flex justify-center' : 'p-3'
+                }`}
+                title={isSidebarCollapsed ? "Account Menu" : undefined}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-lg flex-shrink-0">
+                    {user?.name?.charAt(0).toUpperCase()}
                   </div>
-                  {user?.is_manager && (
+                  
+                  <div className={`flex-1 min-w-0 text-left transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`}>
+                    <p className="text-sm font-semibold text-slate-800 truncate">{user?.name}</p>
+                    <p className="text-xs text-slate-500 capitalize">{user?.role}</p>
+                  </div>
+                  
+                  <ChevronDown className={`w-4 h-4 text-slate-400 transition-all duration-300 flex-shrink-0 ${showUserMenu ? 'rotate-180' : ''} ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100'}`} />
+                </div>
+                
+                {user?.is_manager && (
+                  <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 h-0 mt-0' : 'opacity-100 h-auto mt-2'}`}>
                     <span className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-semibold rounded-full shadow-sm">
                       👔 Manager
                     </span>
-                  )}
-                </button>
-              ) : (
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex justify-center w-full"
-                  title="Account Menu"
-                >
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-sm font-bold text-white shadow-lg hover:scale-105 transition-transform cursor-pointer">
-                    {user?.name?.charAt(0).toUpperCase()}
                   </div>
-                </button>
-              )}
+                )}
+              </button>
 
               {/* User Dropdown Menu */}
               {showUserMenu && (
