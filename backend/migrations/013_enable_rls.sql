@@ -73,13 +73,3 @@ CREATE POLICY "Backend full access" ON schema_migrations
 -- Add comment for documentation
 COMMENT ON POLICY "Backend full access" ON users IS 
   'Permissive policy for backend service. Security enforced by JWT middleware.';
-
--- Log the RLS implementation
-INSERT INTO ticket_activities (ticket_id, actor_id, action, comment, created_at)
-SELECT 
-  NULL as ticket_id,
-  (SELECT id FROM users WHERE role = 'admin' LIMIT 1) as actor_id,
-  'security_enhancement' as action,
-  'RLS enabled on all tables with permissive policies for backend access' as comment,
-  now() as created_at
-WHERE EXISTS (SELECT 1 FROM users WHERE role = 'admin');
