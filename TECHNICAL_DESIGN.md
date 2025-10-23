@@ -42,10 +42,11 @@ A full-stack web application enabling structured escalation workflows between Gr
 | State Management | Zustand | Lightweight global state |
 | Data Fetching | TanStack Query | Server state management, caching |
 | Backend | Node.js + Express + TypeScript | REST API server |
-| Database | PostgreSQL 15+ | Relational data storage |
-| Authentication | JWT + bcrypt (or Clerk) | Secure user authentication |
-| File Storage | AWS S3 (or compatible) | Scalable file uploads |
-| Notifications | Postmark/SES + Slack | Email and chat notifications |
+| Database | PostgreSQL 15+ with Supabase | Relational data storage |
+| Authentication | Custom JWT + bcrypt | Secure user authentication |
+| File Storage | Supabase Storage (S3-compatible) | Scalable file uploads |
+| Deployment | Render (Backend) + Vercel (Frontend) | Cloud hosting |
+| Security | Row Level Security (RLS) | Database-level security |
 
 ## 3. Database Design
 
@@ -72,6 +73,11 @@ email             text UNIQUE NOT NULL
 name              text
 role              text NOT NULL  -- 'growth' | 'ops' | 'admin'
 password_hash     text
+is_manager        boolean DEFAULT FALSE
+is_active         boolean DEFAULT TRUE
+managed_by        uuid REFERENCES users(id)
+auto_assign_enabled boolean DEFAULT FALSE
+profile_picture   text
 created_at        timestamptz
 updated_at        timestamptz
 last_login_at     timestamptz
@@ -82,25 +88,47 @@ last_login_at     timestamptz
 #### `tickets`
 ```sql
 id                      uuid PRIMARY KEY
-ticket_number           text UNIQUE NOT NULL  -- 'GROW-20251008-0001'
+ticket_number           text UNIQUE NOT NULL  -- 'GROW-20251008-0001' or 'OPS-20251008-0001'
 created_by              uuid REFERENCES users(id)
+assigned_to             uuid REFERENCES users(id)
 brand_name              text NOT NULL
 description             text
-issue_type              text  -- enum: product_not_as_listed (Product Not Live After Return), giant_discrepancy_brandless_inverterless (GRN Discrepancy), physical_vs_scale_mismatch (Physical Product vs SKU Mismatch), other
+issue_type              text  -- User-friendly labels: 'Product Not Live After Return', 'GRN Discrepancy', etc.
 expected_output         text
 priority                text NOT NULL  -- urgent | high | medium | low
 status                  text DEFAULT 'open'  -- open | processed | resolved | re-opened | closed
 created_at              timestamptz
 updated_at              timestamptz
 last_status_change_at   timestamptz
-current_assignee        uuid REFERENCES users(id)
 resolved_at             timestamptz
 resolution_remarks      text
 reopen_reason           text
+manager_notes           text
+reviewed_by_manager     uuid REFERENCES users(id)
 search_vector           tsvector  -- Full-text search
 ```
 
-**Indexes:** ticket_number, created_by, status, priority, brand_name, created_at, current_assignee, search_vector (GIN)
+**Indexes:** ticket_number, created_by, assigned_to, status, priority, brand_name, created_at, search_vector (GIN)
+
+#### `ticket_assignments`
+```sql
+id              uuid PRIMARY KEY
+ticket_id       uuid REFERENCES tickets(id) ON DELETE CASCADE
+assigned_to     uuid REFERENCES users(id)
+assigned_by     uuid REFERENCES users(id)
+assigned_at     timestamptz
+notes           text
+```
+
+**Indexes:** ticket_id, assigned_to, assigned_by
+
+#### `ticket_sequences`
+```sql
+id              uuid PRIMARY KEY
+date            date UNIQUE NOT NULL
+growth_sequence integer DEFAULT 0
+ops_sequence    integer DEFAULT 0
+```
 
 #### `ticket_activities`
 ```sql
@@ -168,14 +196,23 @@ Client                    API                     Database
 - `GET /api/users/me` - Get current user
 
 #### Tickets
-- `POST /api/tickets` - Create ticket (Growth only)
+- `POST /api/tickets` - Create ticket (Growth/Ops)
 - `GET /api/tickets` - List tickets with filters
 - `GET /api/tickets/:ticket_number` - Get ticket details
 - `PATCH /api/tickets/:ticket_number` - Update ticket
-- `POST /api/tickets/:ticket_number/resolve` - Ops adds resolution
-- `POST /api/tickets/:ticket_number/reopen` - Growth reopens ticket
-- `POST /api/tickets/:ticket_number/close` - Growth closes ticket
+- `POST /api/tickets/:ticket_number/resolve` - Add resolution
+- `POST /api/tickets/:ticket_number/reopen` - Reopen ticket
+- `POST /api/tickets/:ticket_number/close` - Close ticket
 - `GET /api/tickets/:ticket_number/activities` - Get activity timeline
+
+#### Manager Operations
+- `GET /api/managers/team-members` - Get team members
+- `POST /api/managers/assign-ticket` - Assign ticket to team member
+- `GET /api/managers/incoming` - Get incoming tickets
+- `GET /api/managers/outgoing` - Get outgoing tickets
+- `GET /api/managers/metrics` - Get team metrics
+- `GET /api/managers/workload` - Get team workload
+- `PATCH /api/managers/toggle-user/:id` - Toggle user active status
 
 ### Request/Response Examples
 
@@ -225,9 +262,10 @@ Response 200:
 App
 ├── LoginPage
 └── Layout (authenticated)
-    ├── Header
-    │   ├── Navigation
-    │   └── UserMenu
+    ├── Sidebar
+    │   ├── Navigation (role-based)
+    │   ├── PWAInstallPrompt
+    │   └── FullscreenToggle
     └── Routes
         ├── DashboardPage
         │   ├── StatsCards
@@ -238,12 +276,22 @@ App
         │   └── TicketTable
         ├── CreateTicketPage
         │   └── TicketForm
-        └── TicketDetailPage
-            ├── TicketHeader
-            ├── TicketInfo
-            ├── ResolutionSection
-            ├── ActionForms
-            └── ActivityTimeline
+        ├── TicketDetailPage
+        │   ├── TicketHeader
+        │   ├── TicketInfo
+        │   ├── ResolutionSection
+        │   ├── ActionForms
+        │   └── ActivityTimeline
+        ├── ManagerOverview (managers only)
+        │   ├── IncomingTickets
+        │   ├── OutgoingTickets
+        │   └── TeamMetrics
+        ├── TeamManagement (managers only)
+        │   ├── TeamMembersList
+        │   └── UserActivationToggle
+        └── AdminDashboard (admin only)
+            ├── UsersManagement
+            └── SystemSettings
 ```
 
 ### State Management Strategy
@@ -317,16 +365,23 @@ App
    - Helmet.js security headers
    - HTTPS in production
 
-4. **File Upload Security:**
-   - Signed URLs for upload/download
+4. **Database Security:**
+   - Row Level Security (RLS) enabled on all tables
+   - Permissive policies for backend service
+   - JWT-based authentication at application level
+   - No direct database access from frontend
+
+5. **File Upload Security:**
+   - Supabase signed URLs for upload/download
    - File type validation
    - Size limits (20 MB default)
-   - Virus scanning (optional)
+   - Image compression for optimization
 
-5. **Audit Trail:**
+6. **Audit Trail:**
    - All status changes logged to `ticket_activities`
    - Actor ID recorded for every action
    - Immutable activity log (no deletes)
+   - Manager assignment tracking
 
 ## 7. Notification System
 
