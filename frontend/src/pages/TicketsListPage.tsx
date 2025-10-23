@@ -247,7 +247,7 @@ export default function TicketsListPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {user?.is_manager || user?.role === 'admin' ? 'My Team Created' : 'I Created'}
+                {(user?.is_manager || (user?.role as string) === 'admin') ? 'My Team Created' : 'I Created'}
               </button>
               <button
                 onClick={() => setTeamFilter('assigned')}
@@ -257,7 +257,7 @@ export default function TicketsListPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {user?.is_manager || user?.role === 'admin' ? 'Assigned to My Team' : 'Assigned to Me'}
+                {(user?.is_manager || (user?.role as string) === 'admin') ? 'Assigned to My Team' : 'Assigned to Me'}
               </button>
             </div>
           </div>

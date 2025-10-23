@@ -8,18 +8,12 @@ import { ticketService } from '../services/ticketService';
 import PWAInstallPrompt from './PWAInstallPrompt';
 import FullscreenToggle from './FullscreenToggle';
 import { 
-  LayoutDashboard,
   ArrowDownCircle,
   ArrowUpCircle,
   Users,
-  BarChart3,
   Plus,
-  FileX,
-  Briefcase,
   Send,
   Shield,
-  Ticket,
-  Settings,
   ChevronDown,
   Menu,
   X,
@@ -30,19 +24,8 @@ import {
   UserCheck,
   Cog,
   Bell,
-  Search,
-  Filter,
-  TrendingUp,
-  Activity,
-  Clock,
   CheckCircle2,
-  AlertCircle,
-  Zap,
-  Target,
-  Calendar,
-  PieChart,
-  BarChart,
-  LineChart
+  TrendingUp
 } from 'lucide-react';
 
 interface NavigationItem {
@@ -75,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+  const [expandedGroups] = useState<string[]>(() => {
     const saved = localStorage.getItem('sidebar-expanded-groups');
     return saved ? JSON.parse(saved) : ['Overview', 'Tickets', 'My Work'];
   });
@@ -155,13 +138,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const toggleGroup = (groupLabel: string) => {
-    setExpandedGroups(prev =>
-      prev.includes(groupLabel)
-        ? prev.filter(g => g !== groupLabel)
-        : [...prev, groupLabel]
-    );
-  };
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
@@ -314,7 +290,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
 
           {/* Navigation Groups */}
           <nav className="flex-1 overflow-y-auto py-4 px-2">
-            {navigationGroups.map((group, groupIndex) => (
+            {navigationGroups.map((group) => (
               <div key={group.label} className="mb-6">
                 {/* Group Header */}
                 {!isSidebarCollapsed && (

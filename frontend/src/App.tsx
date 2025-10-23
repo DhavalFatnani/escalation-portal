@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
 import LoginPage from './pages/LoginPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
-import DashboardPage from './pages/DashboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import TicketsListPage from './pages/TicketsListPage';
 import TicketDetailPage from './pages/TicketDetailPage';

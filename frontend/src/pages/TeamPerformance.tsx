@@ -13,14 +13,12 @@ import {
   Zap
 } from 'lucide-react';
 import { managerService } from '../services/managerService';
-import { useAuthStore } from '../stores/authStore';
 
 const TeamPerformance: React.FC = () => {
-  const user = useAuthStore((state) => state.user);
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
 
   // Fetch team metrics
-  const { data: metricsData, isLoading: metricsLoading } = useQuery({
+  const { data: metricsData } = useQuery({
     queryKey: ['team-metrics'],
     queryFn: () => managerService.getTeamMetrics(),
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -76,7 +74,7 @@ const TeamPerformance: React.FC = () => {
   // Calculate team efficiency metrics
   const teamEfficiency = {
     avgResponseTime: metrics?.avg_resolution_time_hours || 0,
-    completionRate: metrics?.total_tickets > 0 
+    completionRate: metrics?.total_tickets && metrics.total_tickets > 0 
       ? Math.round((metrics.resolved_tickets / metrics.total_tickets) * 100)
       : 0,
     reopenRate: metrics?.reopen_rate || 0,
@@ -343,7 +341,7 @@ const TeamPerformance: React.FC = () => {
                 <div className="w-3 h-3 bg-red-500 rounded-full" />
                 <span className="text-sm text-gray-600">Reopened</span>
               </div>
-              <span className="font-semibold text-red-600">{metrics?.reopened_tickets || 0}</span>
+              <span className="font-semibold text-red-600">{metrics?.open_tickets || 0}</span>
             </div>
           </div>
         </div>

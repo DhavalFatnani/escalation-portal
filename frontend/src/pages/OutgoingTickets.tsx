@@ -6,7 +6,6 @@ import {
   Clock, 
   CheckCircle, 
   AlertCircle,
-  User,
   Filter,
   Search,
   TrendingUp,
@@ -14,12 +13,10 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { managerService } from '../services/managerService';
-import { useAuthStore } from '../stores/authStore';
 import { Ticket } from '../types';
 import PageHeader from '../components/PageHeader';
 
 const OutgoingTickets: React.FC = () => {
-  const user = useAuthStore((state) => state.user);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

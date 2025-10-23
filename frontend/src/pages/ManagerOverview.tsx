@@ -19,14 +19,14 @@ const ManagerOverview: React.FC = () => {
   const user = useAuthStore((state) => state.user);
 
   // Fetch incoming tickets (tickets needing assignment to team)
-  const { data: incomingData, isLoading: incomingLoading } = useQuery({
+  const { data: incomingData } = useQuery({
     queryKey: ['incoming-tickets'],
     queryFn: () => managerService.getIncomingTickets(),
     refetchInterval: 15000, // Refresh every 15 seconds
   });
 
   // Fetch outgoing tickets (tickets created by team)
-  const { data: outgoingData, isLoading: outgoingLoading } = useQuery({
+  const { data: outgoingData } = useQuery({
     queryKey: ['outgoing-tickets'],
     queryFn: () => managerService.getOutgoingTickets(),
     refetchInterval: 15000, // Refresh every 15 seconds
@@ -278,7 +278,7 @@ const ManagerOverview: React.FC = () => {
               </div>
               <p className="text-sm text-gray-600 mb-1">Completion Rate</p>
               <p className="text-2xl font-bold text-gray-900">
-                {metrics?.total_tickets > 0 
+                {metrics?.total_tickets && metrics.total_tickets > 0 
                   ? `${Math.round((metrics.resolved_tickets / metrics.total_tickets) * 100)}%` 
                   : 'N/A'}
               </p>

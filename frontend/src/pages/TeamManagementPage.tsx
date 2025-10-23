@@ -17,7 +17,7 @@ const TeamManagementPage: React.FC = () => {
 
   const toggleActiveMutation = useMutation({
     mutationFn: (userId: string) => managerService.toggleUserActive(userId),
-    onSuccess: (data, userId) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['team-members'] });
       queryClient.invalidateQueries({ queryKey: ['team-metrics'] });
       showSuccess(data.message);
@@ -31,11 +31,11 @@ const TeamManagementPage: React.FC = () => {
     const action = isActive ? 'deactivate' : 'activate';
     showConfirm(
       `Are you sure you want to ${action} ${name}?`,
+      `This will ${action} the user account and ${isActive ? 'prevent' : 'allow'} them to log in.`,
       () => {
         hideModal();
         toggleActiveMutation.mutate(userId);
-      },
-      hideModal
+      }
     );
   };
 
@@ -102,9 +102,7 @@ const TeamManagementPage: React.FC = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Last Login:</span>
                   <span className="font-medium text-gray-900">
-                    {member.last_login_at
-                      ? new Date(member.last_login_at).toLocaleDateString()
-                      : 'Never'}
+                    Not Available
                   </span>
                 </div>
               </div>

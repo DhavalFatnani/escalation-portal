@@ -91,6 +91,7 @@ export interface TicketFilters {
   // Individual user filters
   created_by?: string;
   assigned_to?: string;
+  current_assignee?: string;
   // New manager-specific filters
   created_by_team?: UserRole;
   assigned_to_team?: UserRole;

@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { managerService } from '../services/managerService';
-import { TeamMember } from '../types';
 import { useModal } from '../hooks/useModal';
 import Modal from './Modal';
 
@@ -41,7 +40,7 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         assigned_to: selectedUser,
         notes: notes.trim() || undefined,
       }),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       queryClient.invalidateQueries({ queryKey: ['ticket', ticketNumber] });
       queryClient.invalidateQueries({ queryKey: ['pending-tickets'] });
@@ -55,14 +54,12 @@ export const AssignmentModal: React.FC<AssignmentModalProps> = ({
         isReassignment ? 'Ticket Reassigned!' : 'Ticket Assigned!', 
         isReassignment 
           ? `Ticket reassigned successfully from ${currentAssigneeName} to new team member.`
-          : 'Ticket assigned successfully to team member.',
-        () => {
-          hideModal();
-          onClose();
-          setSelectedUser('');
-          setNotes('');
-        }
+          : 'Ticket assigned successfully to team member.'
       );
+      hideModal();
+      onClose();
+      setSelectedUser('');
+      setNotes('');
     },
     onError: (error: any) => {
       showError(error.response?.data?.error || 'Failed to assign ticket');
