@@ -44,14 +44,14 @@ export default function DashboardPage() {
 
   const { data: recentTickets } = useQuery({
     queryKey: ['tickets', 'recent', { limit: 10 }],
-    queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'], limit: 10 }),
+    queryFn: () => ticketService.getTickets({ limit: 10 }), // Show ALL tickets for complete overview
     refetchInterval: 30000,
   });
 
   // For managers, get team-specific recent tickets
   const { data: managerRecentTickets } = useQuery({
     queryKey: ['manager-recent-tickets', { limit: 10 }],
-    queryFn: () => ticketService.getTickets({ status: ['open', 'processed', 're-opened'], limit: 10 }),
+    queryFn: () => ticketService.getTickets({ limit: 10 }), // Show ALL tickets for complete overview
     enabled: isManager,
     refetchInterval: 30000,
   });
@@ -198,7 +198,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-6 h-6 ml-2 text-indigo-600" />
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              {isManager ? 'Tickets created by your team members' : 'Latest updates across all tickets'}
+              {isManager ? 'All tickets created by your team members (including resolved/closed)' : 'All tickets across the system (including resolved/closed)'}
             </p>
           </div>
           <Link
