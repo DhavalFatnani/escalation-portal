@@ -1,25 +1,28 @@
 # Growth ↔ Ops Escalation Portal
 
-A secure, modern web application for managing escalation tickets between Growth and Operations teams.
+A secure, modern web application for managing escalation tickets between Growth and Operations teams with advanced manager workflows and bidirectional ticket creation.
 
 ## Features
 
 - 🎫 **Ticket Management**: Create, track, and resolve escalation tickets
-- 👥 **Role-Based Access**: Separate workflows for Growth, Ops, and Admin roles
-- 📎 **File Attachments**: Upload and manage reference files with S3-compatible storage
-- 🔔 **Notifications**: Email and Slack notifications for key events
-- 📊 **Dashboard & Metrics**: Real-time insights and SLA tracking
-- 🔍 **Search & Filters**: Advanced filtering by status, priority, brand, date
-- 📝 **Audit Trail**: Complete activity history for every ticket
+- 👥 **Role-Based Access**: Separate workflows for Growth, Ops, Managers, and Admin roles
+- 👨‍💼 **Manager Workflow**: Team management, ticket assignment, and performance analytics
+- 📎 **File Attachments**: Upload and manage reference files with Supabase storage
+- 🔄 **Bidirectional Flow**: Both Growth and Ops teams can create and escalate tickets
+- 📊 **Real-time Dashboard**: Live updates and comprehensive metrics
+- 🔍 **Advanced Search**: Filter by status, priority, team, and more
+- 📝 **Complete Audit Trail**: Detailed activity history for every ticket
+- 📱 **PWA Support**: Progressive Web App with offline capabilities
+- 🔒 **Row Level Security**: Database-level security with RLS policies
 
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
 - **Backend**: Node.js + Express + TypeScript
-- **Database**: PostgreSQL 15+
-- **Auth**: Clerk (or Logto/Auth0)
-- **Storage**: S3-compatible (AWS S3, DigitalOcean Spaces)
-- **Notifications**: Email (Postmark/SES) + Slack webhooks
+- **Database**: PostgreSQL 15+ with Supabase
+- **Auth**: Custom JWT Authentication
+- **Storage**: Supabase Storage (S3-compatible)
+- **Deployment**: Render (Backend) + Vercel (Frontend)
 
 ## Project Structure
 
@@ -49,9 +52,9 @@ escalation-portal/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- PostgreSQL 15+
-- AWS S3 account (or compatible storage)
-- Clerk account (for authentication)
+- Supabase account (PostgreSQL + Storage)
+- Render account (for backend deployment)
+- Vercel account (for frontend deployment)
 
 ### 1. Clone and Install
 
@@ -62,13 +65,11 @@ npm install
 
 ### 2. Database Setup
 
-```bash
-# Create database
-createdb escalation_portal
+The project uses Supabase for PostgreSQL database and file storage. Set up your Supabase project and run the migrations:
 
-# Run migrations
-cd backend
-npm run migrate
+```bash
+# Run migrations (apply SQL files in backend/migrations/ to Supabase)
+# See docs/deployment.md for detailed instructions
 ```
 
 ### 3. Environment Variables
@@ -79,27 +80,18 @@ Create `.env` files in both `backend/` and `frontend/`:
 ```env
 NODE_ENV=development
 PORT=3001
-DATABASE_URL=postgresql://user:password@localhost:5432/escalation_portal
+DATABASE_URL=postgresql://postgres:[password]@[host]:5432/postgres
 JWT_SECRET=your-secret-key-change-in-production
 
-# Clerk
-CLERK_SECRET_KEY=your-clerk-secret-key
-
-# S3 Storage
-S3_BUCKET=your-bucket-name
-S3_REGION=us-east-1
-S3_ACCESS_KEY_ID=your-access-key
-S3_SECRET_ACCESS_KEY=your-secret-key
-
-# Notifications
-POSTMARK_API_KEY=your-postmark-key
-SLACK_WEBHOOK_URL=your-slack-webhook-url
+# Supabase Storage
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 ```
 
 **frontend/.env**:
 ```env
 VITE_API_URL=http://localhost:3001
-VITE_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
 ```
 
 ### 4. Run Development Servers
@@ -146,47 +138,68 @@ This creates sample users:
 
 ## User Roles & Permissions
 
-### Growth
+### Growth Team Member
 - Create tickets
-- View own tickets
+- View assigned tickets
 - Accept/reopen tickets
-- Add comments
+- Add comments and attachments
 
-### Ops
-- View all tickets
-- Claim tickets
+### Ops Team Member
+- View assigned tickets
 - Add resolutions
 - Change ticket status to processed
+- Add comments and attachments
+
+### Growth Manager
+- All Growth Team Member permissions
+- Manage team members (activate/deactivate)
+- Assign tickets to team members
+- View team performance metrics
+- Reassign tickets within team
+
+### Ops Manager
+- All Ops Team Member permissions
+- Manage team members (activate/deactivate)
+- Assign tickets to team members
+- View team performance metrics
+- Reassign tickets within team
 
 ### Admin
-- All Growth + Ops permissions
-- Manage users
-- View analytics
+- All permissions across all roles
+- Manage users and roles
+- View system-wide analytics
 - Configure system settings
+- Force status changes
 
 ## Ticket Workflow
 
+### Bidirectional Escalation Flow
+
+**Growth → Ops Escalation:**
 1. **Growth creates ticket** → Status: `open`
-2. **Ops adds resolution** → Status: `processed`
-3. **Growth reviews**:
+2. **Growth Manager assigns** → Assigned to Ops team member
+3. **Ops adds resolution** → Status: `processed`
+4. **Growth reviews**:
    - Accept → Status: `resolved`
    - Reopen with remarks → Status: `re-opened`
 
-## Development with Cursor
+**Ops → Growth Escalation:**
+1. **Ops creates ticket** → Status: `open`
+2. **Ops Manager assigns** → Assigned to Growth team member
+3. **Growth adds resolution** → Status: `processed`
+4. **Ops reviews**:
+   - Accept → Status: `resolved`
+   - Reopen with remarks → Status: `re-opened`
 
-This project is optimized for development with Cursor AI:
+## Development
 
-1. **`.cursorrules`** file defines project conventions
-2. Use Cursor to:
-   - Generate new API endpoints with tests
-   - Create React components from descriptions
-   - Refactor code while maintaining conventions
-   - Generate SQL migrations
+This project is optimized for development with Cursor AI and includes:
 
-Example Cursor prompts:
-- "Add a new API endpoint to bulk assign tickets"
-- "Create a React component for the metrics dashboard"
-- "Generate a migration to add SLA fields to tickets table"
+- **TypeScript**: Full type safety across frontend and backend
+- **Real-time Updates**: Auto-refresh every 30 seconds
+- **PWA Features**: Install prompt, offline support, fullscreen toggle
+- **Manager Workflows**: Complete team management and assignment system
+- **Security**: Row Level Security (RLS) with JWT authentication
 
 ## Testing
 
@@ -203,20 +216,22 @@ npm test --workspace=frontend
 
 ## Deployment
 
-See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions for:
-- Vercel/Netlify (Frontend)
-- Render/AWS ECS (Backend)
-- AWS RDS (Database)
+See [docs/deployment.md](docs/deployment.md) for detailed deployment instructions.
+
+## Documentation
+
+- [Product Requirements Document](ESCALATION_PORTAL_PRD.md) - Complete feature specifications
+- [Technical Design](TECHNICAL_DESIGN.md) - Architecture and implementation details
+- [API Specification](docs/api-spec.md) - Complete API documentation
+- [Deployment Guide](docs/deployment.md) - Step-by-step deployment instructions
 
 ## Contributing
 
 1. Create feature branch
-2. Make changes following `.cursorrules` conventions
-3. Add tests
+2. Make changes following TypeScript conventions
+3. Add tests for new functionality
 4. Submit PR with description
 
 ## License
 
 MIT
-# escalation-portal
-# escalation-portal
