@@ -51,11 +51,6 @@ const ManagerOverview: React.FC = () => {
   const workload = workloadData?.workload || [];
   const metrics = metricsData;
 
-  // Debug logging to check ticket data
-  console.log('Incoming tickets:', incomingTickets);
-  console.log('Outgoing tickets:', outgoingTickets);
-  console.log('Outgoing tickets by status:', outgoingTickets.map(t => ({ id: t.id, status: t.status, ticket_number: t.ticket_number })));
-
   // Calculate incoming ticket counts by status (only active tickets)
   const incomingCounts = {
     unassigned: incomingTickets.filter(t => !t.assigned_to && t.status !== 'resolved' && t.status !== 'closed').length,

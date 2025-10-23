@@ -74,6 +74,8 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ collapsed = false }
 
   const handleDismiss = () => {
     setShowPrompt(false);
+    setDeferredPrompt(null);
+    localStorage.setItem('pwa-install-dismissed', 'true');
   };
 
   // Don't show anything if installed or dismissed
