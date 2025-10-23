@@ -9,3 +9,22 @@ coverage
 .idea
 build
 *.tsbuildinfo
+
+# Build artifacts
+backend/dist/
+frontend/dist/
+frontend/build/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Test artifacts
+testsprite_tests/
+test-results/
+
+# Migration artifacts
+backend/run-*.js
+generate-passwords.sh
