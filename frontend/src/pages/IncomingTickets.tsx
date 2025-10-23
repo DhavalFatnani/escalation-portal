@@ -462,8 +462,8 @@ const IncomingTickets: React.FC = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3 flex-1">
-                      {/* Checkbox for unassigned tickets */}
-                      {!ticket.assigned_to && (
+                    {/* Checkbox for unassigned tickets */}
+                    {!ticket.assigned_to && ticket.status !== 'resolved' && ticket.status !== 'closed' && (
                         <CustomCheckbox
                           checked={selectedTickets.includes(ticket.ticket_number)}
                           onChange={() => handleSelectTicket(ticket.ticket_number)}

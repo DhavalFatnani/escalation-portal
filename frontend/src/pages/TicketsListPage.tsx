@@ -464,7 +464,7 @@ export default function TicketsListPage() {
                 </Link>
 
                 {/* Assignment Actions for Managers - Outside of Link to prevent navigation */}
-                {(user?.is_manager || user?.role === 'admin') && ticket.status !== 'resolved' && (
+                {(user?.is_manager || user?.role === 'admin') && ticket.status !== 'resolved' && ticket.status !== 'closed' && (
                   <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
                     {ticket.assigned_to ? (
                       <div className="flex flex-col items-end space-y-2 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
