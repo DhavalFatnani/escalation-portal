@@ -20,25 +20,34 @@ export default function DashboardPage() {
     refetchInterval: 30000,
   });
 
-  // Regular Dashboard Data (for non-managers)
+  // Dashboard Data (for all roles - show complete overview)
   const { data: openTickets } = useQuery({
     queryKey: ['tickets', 'open', { limit: 5 }],
     queryFn: () => ticketService.getTickets({ status: ['open'], limit: 5 }),
-    enabled: !isManager,
     refetchInterval: 30000,
   });
 
   const { data: processedTickets } = useQuery({
     queryKey: ['tickets', 'processed', { limit: 5 }],
     queryFn: () => ticketService.getTickets({ status: ['processed'], limit: 5 }),
-    enabled: !isManager,
     refetchInterval: 30000,
   });
 
   const { data: reopenedTickets } = useQuery({
     queryKey: ['tickets', 'reopened', { limit: 5 }],
     queryFn: () => ticketService.getTickets({ status: ['re-opened'], limit: 5 }),
-    enabled: !isManager,
+    refetchInterval: 30000,
+  });
+
+  const { data: resolvedTickets } = useQuery({
+    queryKey: ['tickets', 'resolved', { limit: 5 }],
+    queryFn: () => ticketService.getTickets({ status: ['resolved'], limit: 5 }),
+    refetchInterval: 30000,
+  });
+
+  const { data: closedTickets } = useQuery({
+    queryKey: ['tickets', 'closed', { limit: 5 }],
+    queryFn: () => ticketService.getTickets({ status: ['closed'], limit: 5 }),
     refetchInterval: 30000,
   });
 
@@ -110,6 +119,22 @@ export default function DashboardPage() {
       link: '/tickets?status=re-opened',
       description: 'Requires action',
     },
+    {
+      name: 'Resolved',
+      value: resolvedTickets?.total || 0,
+      icon: TrendingUp,
+      gradient: 'from-green-500 to-emerald-500',
+      link: '/tickets?status=resolved',
+      description: 'Completed',
+    },
+    {
+      name: 'Closed',
+      value: closedTickets?.total || 0,
+      icon: TrendingUp,
+      gradient: 'from-gray-500 to-slate-500',
+      link: '/tickets?status=closed',
+      description: 'Finalized',
+    },
   ];
 
   const getPriorityColor = (priority: string) => {
@@ -159,7 +184,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 gap-6 ${isManager && managerMetrics ? 'md:grid-cols-3' : 'md:grid-cols-5'}`}>
         {stats.map((stat, index) => (
           <Link
             key={stat.name}
@@ -198,7 +223,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-6 h-6 ml-2 text-indigo-600" />
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              {isManager ? 'All tickets created by your team members (including resolved/closed)' : 'All tickets across the system (including resolved/closed)'}
+              {isManager ? 'All tickets created by your team members' : 'All tickets across the system'} (complete overview including resolved/closed)
             </p>
           </div>
           <Link
