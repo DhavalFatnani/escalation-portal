@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ticketService } from '../services/ticketService';
+import { managerService } from '../services/managerService';
 import { Search, Filter, Ticket as TicketIcon, ArrowRight, X, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { TicketStatus, TicketPriority } from '../types';
 import { useAuthStore } from '../stores/authStore';
+import { useModal } from '../hooks/useModal';
+import Modal from '../components/Modal';
 
 export default function TicketsListPage() {
   const { user } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { modalState, showSuccess, showError, hideModal } = useModal();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [includeResolved, setIncludeResolved] = useState(searchParams.get('includeResolved') === 'true');
@@ -44,6 +49,31 @@ export default function TicketsListPage() {
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
+  // Fetch team members for managers
+  const { data: teamData } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => managerService.getTeamMembers(),
+    enabled: user?.is_manager || user?.role === 'admin',
+    refetchInterval: 30000,
+  });
+
+  // Assignment mutation for managers
+  const assignMutation = useMutation({
+    mutationFn: ({ ticketNumber, assigneeId }: { ticketNumber: string; assigneeId: string }) =>
+      managerService.assignTicket(ticketNumber, { assigned_to: assigneeId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      showSuccess('Ticket assigned successfully');
+    },
+    onError: () => {
+      showError('Failed to assign ticket');
+    },
+  });
+
+  const handleIndividualAssign = (ticketNumber: string, assigneeId: string) => {
+    assignMutation.mutate({ ticketNumber, assigneeId });
+  };
+
   // Filter tickets based on team filter - Updated for manager workflow
   const filteredTickets = data?.tickets?.filter(ticket => {
     if (teamFilter === 'all') return true;
@@ -71,6 +101,8 @@ export default function TicketsListPage() {
     }
     return true;
   }) || [];
+
+  const teamMembers = teamData?.team_members || [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -430,6 +462,56 @@ export default function TicketsListPage() {
                   </div>
                 </div>
               </Link>
+
+              {/* Assignment Actions for Managers - Outside of Link to prevent navigation */}
+              {(user?.is_manager || user?.role === 'admin') && ticket.status !== 'resolved' && (
+                <div className="absolute top-4 right-4 z-10" onClick={(e) => e.stopPropagation()}>
+                  {ticket.assigned_to ? (
+                    <div className="flex flex-col items-end space-y-2 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Assigned to</p>
+                        <p className="text-sm font-medium text-green-600">{ticket.assigned_to_name}</p>
+                      </div>
+                      <select
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          if (e.target.value) handleIndividualAssign(ticket.ticket_number, e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-3 py-1 text-xs border border-orange-300 rounded bg-orange-50 text-orange-700 hover:bg-orange-100 focus:ring-2 focus:ring-orange-500 focus:border-transparent font-medium"
+                        defaultValue=""
+                      >
+                        <option value="">Reassign to...</option>
+                        {teamMembers.filter(member => member.is_active).map(member => (
+                          <option key={member.id} value={member.id}>
+                            {member.name} ({member.active_tickets || 0})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-200">
+                      <select
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          if (e.target.value) handleIndividualAssign(ticket.ticket_number, e.target.value);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="px-3 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        defaultValue=""
+                      >
+                        <option value="">Assign to...</option>
+                        {teamMembers.filter(member => member.is_active).map(member => (
+                          <option key={member.id} value={member.id}>
+                            {member.name} ({member.active_tickets || 0})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             ))}
 
             {filteredTickets.length === 0 && (
@@ -514,6 +596,16 @@ export default function TicketsListPage() {
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={hideModal}
+        title={modalState.title}
+        type={modalState.type}
+      >
+        {modalState.message}
+      </Modal>
     </div>
   );
 }
